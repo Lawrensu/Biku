@@ -1,5 +1,11 @@
-# Vue 3 + Vite
+# Biku - Interface Design and Development (COS30043) Assignemnt Project
 
-This template should help get you started developing with Vue 3 in Vite. The template uses Vue 3 `<script setup>` SFCs, check out the [script setup docs](https://v3.vuejs.org/api/sfc-script-setup.html#sfc-script-setup) to learn more.
+This documentation serves to describe the design and the implementation of the Automated Negotiation System for our Intelligent Systems (COS30043) unit.
 
-Learn more about IDE Support for Vue in the [Vue Docs Scaling up Guide](https://vuejs.org/guide/scaling-up/tooling.html#ide-support).
+## Outline
+1. [Project Overview](docs/project_overview.md)
+2. [Getting Started](docs/getting_started.md)
+3. [Development Convention](docs/development_convention.md)
+4. [Architecture/System Design](docs/system_design.md)
+
+---

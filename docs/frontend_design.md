@@ -1,0 +1,506 @@
+# Biku — Frontend Design System
+> Design contract for implementation. Every decision here is intentional and justifiable. Reference this file when building components. Do not deviate from these tokens without updating this document first.
+
+---
+
+## 1. Design Philosophy
+
+Biku is not a productivity tool. It is an intimate shared space for two people. Every design decision which are colour, typography, spacing, motion must serve that emotional context. The interface should feel like a private journal, not a dashboard.
+
+**Core design principles:**
+- **Warmth over efficiency** — generous spacing, soft colours, unhurried interactions
+- **Intimacy over feature density** — never crowd the screen; let content breathe
+- **Consistency over cleverness** — use the same patterns everywhere; surprise belongs in content, not UI
+- **Emotion-first hierarchy** — the most emotionally significant element on any screen gets the most prominent position
+
+---
+
+## 2. Colour System
+
+### 2.1 Design Rationale
+
+The palette is built from two emotional axes. The warm axis — Linen, Powder Blush, Black Cherry — carries intimacy, warmth, and tenderness. The cool axis — Blue Slate, Carbon Black — provides grounding, calm, and readability. Neither axis dominates; they work together the way two people in a relationship do.
+
+Black Cherry serves a dual role: it is both the destructive/error colour and the dark anchor of the warm family (text on Powder Blush surfaces). This is intentional — it keeps the palette minimal and coherent.
+
+### 2.2 Base Tokens
+
+These are the raw colour values. Never use these directly in components — always use the semantic tokens defined in Section 2.3.
+
+```css
+/* Raw palette — do not use directly in components */
+--color-linen:        #FAF1E8;
+--color-carbon:       #1B1C20;
+--color-blush:        #EDB1B0;
+--color-slate:        #5B6E7D;
+--color-cherry:       #5C0403;
+--color-cherry-tint:  #F5E8E8; /* ~10% cherry on linen — error backgrounds, light mode */
+```
+
+### 2.3 Semantic Tokens
+
+Semantic tokens are what components use. They map to base tokens differently per mode. This is the layer that makes dark mode work cleanly — components never need to know which mode they are in.
+
+```css
+:root {
+    /* Surfaces */
+    --surface-base:     #FAF1E8; /* Page background */
+    --surface-card:     #FFFFFF; /* Card, panel surfaces — slight lift over base */
+    --surface-elevated: #F5EDE0; /* Modals, dropdowns */
+
+    /* Text */
+    --text-primary:     #1B1C20;
+    --text-secondary:   #5B6E7D;
+    --text-muted:       #8A9BA6;
+    --text-on-blush:    #5C0403; /* Text sitting on Powder Blush surfaces */
+    --text-on-dark:     #FAF1E8; /* Text sitting on Carbon Black / Slate surfaces */
+
+    /* Brand */
+    --accent-warm:      #EDB1B0; /* Powder Blush — primary brand accent */
+    --accent-cool:      #5B6E7D; /* Blue Slate — secondary accent */
+
+    /* Destructive / Error */
+    --error-text:       #5C0403;
+    --error-surface:    #F5E8E8;
+    --error-border:     #D4A0A0;
+
+    /* Interactive */
+    --btn-primary-bg:       #EDB1B0;
+    --btn-primary-text:     #5C0403;
+    --btn-primary-hover-bg: #E4A09F;
+
+    --btn-secondary-bg:     #1B1C20;
+    --btn-secondary-text:   #FAF1E8;
+    --btn-secondary-hover-bg: #2E2F35;
+
+    /* Borders */
+    --border-subtle:    rgba(27, 28, 32, 0.08);
+    --border-default:   rgba(27, 28, 32, 0.15);
+    --border-strong:    rgba(27, 28, 32, 0.30);
+
+    /* Focus ring */
+    --focus-ring:       #EDB1B0;
+}
+
+[data-theme='dark'] {
+    /* Surfaces — warm-dark stack, three levels for elevation */
+    --surface-base:     #1A1612; /* Page background — warm black */
+    --surface-card:     #242019; /* Cards, panels */
+    --surface-elevated: #2E2920; /* Modals, dropdowns */
+
+    /* Text */
+    --text-primary:     #FAF1E8; /* Linen inverted to foreground */
+    --text-secondary:   #9E9890;
+    --text-muted:       #6B6560;
+    --text-on-blush:    #5C0403; /* Unchanged — blush surfaces exist in both modes */
+    --text-on-dark:     #FAF1E8;
+
+    /* Brand — unchanged, these are identity colours */
+    --accent-warm:      #EDB1B0;
+    --accent-cool:      #5B6E7D;
+
+    /* Destructive / Error */
+    --error-text:       #F0A0A0; /* Lightened for legibility on dark surface */
+    --error-surface:    #2A1515;
+    --error-border:     #5C2020;
+
+    /* Interactive */
+    --btn-primary-bg:       #EDB1B0;
+    --btn-primary-text:     #5C0403;
+    --btn-primary-hover-bg: #E4A09F;
+
+    --btn-secondary-bg:     #FAF1E8;
+    --btn-secondary-text:   #1B1C20;
+    --btn-secondary-hover-bg: #EDE4D6;
+
+    /* Borders */
+    --border-subtle:    rgba(250, 241, 232, 0.06);
+    --border-default:   rgba(250, 241, 232, 0.12);
+    --border-strong:    rgba(250, 241, 232, 0.24);
+
+    /* Focus ring */
+    --focus-ring:       #EDB1B0;
+}
+```
+
+### 2.4 Colour Usage Rules
+
+- **Powder Blush (`--accent-warm`) on buttons:** text must always be `--text-on-blush` (`#5C0403`). Never Carbon Black, never white.
+- **Black Cherry (`#5C0403`) as destructive:** only used for delete confirmations, error text, and text on blush surfaces. Never used decoratively.
+- **Blue Slate (`--accent-cool`):** secondary information, muted labels, empty states, the "calm" partner to blush's warmth.
+- **Linen (`--surface-base`) in light mode:** the page background is never pure white. White would undermine the warmth.
+- **Dark mode surfaces:** three levels. `--surface-base` for pages, `--surface-card` for cards and panels, `--surface-elevated` for modals. Using all three creates visual depth without needing shadows.
+
+---
+
+## 3. Typography
+
+### 3.1 Font Pairing Rationale
+
+**Plus Jakarta Sans** (headings/titles) is geometric and contemporary without feeling corporate. It has enough personality to carry Biku's identity without competing with content. Its clean terminals and balanced proportions read well at large display sizes.
+
+**Lora** (body text) is a serif designed explicitly for screen reading. It carries warmth, literary weight, and a subtle romanticism, appropriate for an application where users read descriptions of memories and emotional notes. The contrast between a clean sans heading and a warm serif body mirrors the two-person dynamic the application serves.
+
+### 3.2 Loading
+
+```html
+<!-- In index.html <head> -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400;0,500;1,400&family=Plus+Jakarta+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+```
+
+### 3.3 Type Scale
+
+```css
+/* Typography tokens */
+--font-heading: 'Plus Jakarta Sans', sans-serif;
+--font-body:    'Lora', Georgia, serif;
+
+/* Scale */
+--text-xs:   0.75rem;   /* 12px — labels, captions */
+--text-sm:   0.875rem;  /* 14px — secondary body, metadata */
+--text-base: 1rem;      /* 16px — primary body text */
+--text-lg:   1.125rem;  /* 18px — lead paragraphs */
+--text-xl:   1.25rem;   /* 20px — small headings */
+--text-2xl:  1.5rem;    /* 24px — section headings */
+--text-3xl:  1.875rem;  /* 30px — page headings */
+--text-4xl:  2.25rem;   /* 36px — display / hero */
+
+/* Weights */
+--weight-regular: 400;
+--weight-medium:  500;
+--weight-semibold: 600;
+
+/* Line heights */
+--leading-tight:  1.25; /* Headings */
+--leading-snug:   1.4;  /* Subheadings */
+--leading-normal: 1.6;  /* UI text */
+--leading-relaxed: 1.75; /* Body / reading text */
+```
+
+### 3.4 Usage Rules
+
+- All headings use `--font-heading` (Plus Jakarta Sans)
+- All body copy, memory descriptions, notes, and reading-length text use `--font-body` (Lora)
+- UI chrome (navigation labels, button text, form labels, metadata) uses `--font-heading` at small sizes
+- Never mix weights within a single text element
+- Italic Lora (`font-style: italic`) is available and appropriate for memory descriptions or emotional quotes
+
+---
+
+## 4. Spacing System
+
+### 4.1 Scale
+
+Spacing follows a base-4 scale. All spacing values are multiples of 4px. This creates visual rhythm and makes layout decisions predictable.
+
+```css
+--space-1:  0.25rem;  /* 4px */
+--space-2:  0.5rem;   /* 8px */
+--space-3:  0.75rem;  /* 12px */
+--space-4:  1rem;     /* 16px */
+--space-5:  1.25rem;  /* 20px */
+--space-6:  1.5rem;   /* 24px */
+--space-8:  2rem;     /* 32px */
+--space-10: 2.5rem;   /* 40px */
+--space-12: 3rem;     /* 48px */
+--space-16: 4rem;     /* 64px */
+--space-20: 5rem;     /* 80px */
+```
+
+### 4.2 Breathing Room Principles
+
+- Page-level horizontal padding: `--space-4` (mobile), `--space-8` (tablet), `--space-12` (desktop)
+- Section spacing (vertical gap between major content blocks): `--space-10` minimum
+- Card internal padding: `--space-4` (compact) or `--space-6` (standard)
+- Form field gap: `--space-4` between fields, `--space-2` between label and input
+- Never use less than `--space-2` as a gap between any two elements
+
+---
+
+## 5. Border Radius
+
+```css
+--radius-sm:   6px;   /* Small chips, badges */
+--radius-md:   10px;  /* Buttons, inputs */
+--radius-lg:   14px;  /* Cards, panels */
+--radius-xl:   20px;  /* Large cards, modals */
+--radius-full: 9999px; /* Pills, avatars */
+```
+
+All interactive elements use `--radius-md`. Cards use `--radius-lg`. Modals use `--radius-xl`. Never use sharp corners (0px) — they contradict the warm, intimate tone.
+
+---
+
+## 6. Motion and Animation
+
+### 6.1 Philosophy
+
+Transitions in Biku are not decorative. They communicate that moving between pages is meaningful — like turning a page in a shared journal. Motion should feel deliberate, unhurried, and tender. Never snappy. Never abrupt.
+
+**Implementation decision:** Vue's built-in `<Transition>` and `<TransitionGroup>` components with CSS are used for all animations. A JS animation library (GSAP, Motion) is not required — the interaction model calls for subtlety, not complexity. Adding a library for effects achievable in CSS would introduce unnecessary dependency weight.
+
+### 6.2 Easing
+
+```css
+/* The core easing curve — ease-out with a slow, gentle finish */
+--ease-tender: cubic-bezier(0.25, 0.46, 0.45, 0.94);
+
+/* For elements entering the screen */
+--ease-enter: cubic-bezier(0.0, 0.0, 0.2, 1.0);
+
+/* For elements leaving the screen */
+--ease-exit: cubic-bezier(0.4, 0.0, 1.0, 1.0);
+```
+
+### 6.3 Duration Scale
+
+```css
+--duration-fast:   150ms; /* Hover states, focus rings, small toggles */
+--duration-normal: 250ms; /* Component transitions — cards, list items */
+--duration-slow:   350ms; /* Page transitions */
+--duration-tender: 400ms; /* Emotional moments — memory reveal, countdown */
+```
+
+### 6.4 Page Transitions
+
+Applied via Vue `<Transition>` wrapping `<RouterView>`. A slow fade-slide — pages slide softly upward as they enter, fade as they leave.
+
+```css
+/* Applied on the <Transition name="page"> wrapper */
+.page-enter-active {
+    transition: opacity var(--duration-slow) var(--ease-enter),
+                transform var(--duration-slow) var(--ease-enter);
+}
+
+.page-leave-active {
+    transition: opacity var(--duration-normal) var(--ease-exit),
+                transform var(--duration-normal) var(--ease-exit);
+}
+
+.page-enter-from {
+    opacity: 0;
+    transform: translateY(12px);
+}
+
+.page-leave-to {
+    opacity: 0;
+    transform: translateY(-8px);
+}
+```
+
+### 6.5 Component-Level Transitions
+
+```css
+/* List items entering (TransitionGroup) */
+.list-enter-active { transition: all var(--duration-normal) var(--ease-enter); }
+.list-leave-active { transition: all var(--duration-fast) var(--ease-exit); }
+.list-enter-from   { opacity: 0; transform: translateY(8px); }
+.list-leave-to     { opacity: 0; transform: translateX(-8px); }
+
+/* Card hover state — subtle lift */
+.card-interactive {
+    transition: transform var(--duration-fast) var(--ease-tender),
+                box-shadow var(--duration-fast) var(--ease-tender);
+}
+.card-interactive:hover {
+    transform: translateY(-2px);
+}
+```
+
+### 6.6 Motion Rules
+
+- Never animate colour directly on hover — use pre-defined hover token values
+- Respect `prefers-reduced-motion` — all transitions must be wrapped:
+
+```css
+@media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after {
+        animation-duration: 0.01ms !important;
+        transition-duration: 0.01ms !important;
+    }
+}
+```
+
+---
+
+## 7. Icons
+
+**Library:** Lucide Icons via `lucide-vue-next`
+
+```bash
+bun add lucide-vue-next
+```
+
+### 7.1 Usage
+
+```vue
+<script setup>
+import { Heart, MapPin, Calendar } from 'lucide-vue-next'
+</script>
+
+<template>
+    <Heart :size="20" :stroke-width="1.75" />
+</template>
+```
+
+### 7.2 Icon Rules
+
+- Default size: `20px` for inline UI icons, `24px` for standalone/decorative icons
+- Default stroke width: `1.75` — thinner than Lucide's default of 2, which suits the softer aesthetic
+- Never scale icons with font-size — always use the `:size` prop explicitly
+- Icons in buttons sit to the left of text with `gap: --space-2` between icon and label
+- Never use icons without accompanying text labels on interactive elements (accessibility)
+
+---
+
+## 8. Component Patterns
+
+### 8.1 Base Components
+
+These three components are used everywhere. All other components extend them. Never bypass these with inline styles.
+
+**BaseButton**
+- Variants: `primary` (Powder Blush bg, Black Cherry text), `secondary` (Carbon Black bg, Linen text), `ghost` (transparent bg, current text colour, border)
+- All variants use `--radius-md`, `--duration-fast` transition
+- Minimum touch target: 44px height on mobile
+
+**BaseInput**
+- Border: `--border-default`, focus ring `--focus-ring` at 2px offset
+- Error state: `--error-border` border, `--error-text` message below
+- Label always above the input, never as placeholder-only
+
+**BaseModal**
+- Background overlay: `rgba(27, 28, 32, 0.6)` with `backdrop-filter: blur(4px)`
+- Modal surface: `--surface-elevated`, `--radius-xl`
+- Entry transition: fade + scale from `0.96` to `1.0` using `--ease-enter`
+
+### 8.2 Card Pattern
+
+```css
+.card {
+    background: var(--surface-card);
+    border: 1px solid var(--border-subtle);
+    border-radius: var(--radius-lg);
+    padding: var(--space-6);
+}
+```
+
+Cards never have drop shadows in light mode — the border provides sufficient separation from the Linen background. In dark mode, the surface colour difference between `--surface-base` and `--surface-card` provides elevation.
+
+---
+
+## 9. Responsive Breakpoints
+
+Mobile-first. Base styles define the mobile layout. Prefixes add complexity upward.
+
+```css
+/* Breakpoints — align with Tailwind defaults */
+--bp-sm:  640px;   /* Large mobile / small tablet */
+--bp-md:  768px;   /* Tablet */
+--bp-lg:  1024px;  /* Desktop */
+--bp-xl:  1280px;  /* Large desktop */
+```
+
+### Navigation behaviour by breakpoint
+
+| Breakpoint | Navigation pattern |
+|---|---|
+| Mobile (`< 640px`) | Bottom tab bar — thumb-reach primary actions |
+| Tablet (`≥ 768px`) | Left sidebar — icons only |
+| Desktop (`≥ 1024px`) | Left sidebar — icons + labels visible |
+
+### Grid columns by breakpoint
+
+| Feature | Mobile | Tablet | Desktop |
+|---|---|---|---|
+| Memory journal | 1 column | 2 columns | 3 columns |
+| Dashboard cards | 1 column | 2 columns | 2 columns |
+| Lists | Full width | Full width | Centred, max-width 640px |
+
+---
+
+## 10. Tailwind Configuration
+
+The design tokens above must be registered in `tailwind.config.js` so they are available as utility classes. This is the single source of truth — not the component files.
+
+```javascript
+// client/tailwind.config.js
+export default {
+    content: ['./index.html', './src/**/*.{vue,js}'],
+    darkMode: ['selector', '[data-theme="dark"]'],
+    theme: {
+        extend: {
+            colors: {
+                linen:  '#FAF1E8',
+                carbon: '#1B1C20',
+                blush:  '#EDB1B0',
+                slate:  '#5B6E7D',
+                cherry: '#5C0403',
+                'cherry-tint': '#F5E8E8',
+            },
+            fontFamily: {
+                heading: ['Plus Jakarta Sans', 'sans-serif'],
+                body:    ['Lora', 'Georgia', 'serif'],
+            },
+            borderRadius: {
+                sm: '6px',
+                md: '10px',
+                lg: '14px',
+                xl: '20px',
+            },
+            transitionTimingFunction: {
+                'tender': 'cubic-bezier(0.25, 0.46, 0.45, 0.94)',
+                'enter':  'cubic-bezier(0.0, 0.0, 0.2, 1.0)',
+                'exit':   'cubic-bezier(0.4, 0.0, 1.0, 1.0)',
+            },
+            transitionDuration: {
+                '350': '350ms',
+                '400': '400ms',
+            },
+        },
+    },
+}
+```
+
+---
+
+## 11. Dark Mode Implementation
+
+Dark mode is toggled by setting `data-theme="dark"` on the `<html>` element. This is managed by the `ui.store.js` Pinia store.
+
+```javascript
+// stores/ui.store.js
+import { defineStore } from 'pinia'
+import { ref, watch } from 'vue'
+
+export const useUiStore = defineStore('ui', () => {
+    const theme = ref(localStorage.getItem('biku-theme') || 'light')
+
+    function toggleTheme() {
+        theme.value = theme.value === 'light' ? 'dark' : 'light'
+    }
+
+    watch(theme, (val) => {
+        document.documentElement.setAttribute('data-theme', val)
+        localStorage.setItem('biku-theme', val)
+    }, { immediate: true })
+
+    return { theme, toggleTheme }
+})
+```
+
+**Why `data-theme` attribute over `prefers-color-scheme` media query?** Because users should be able to override the system preference. The store reads `localStorage` on init, falling back to `'light'`. The system preference could be read as the initial fallback if `localStorage` is empty — that would be the ideal production behaviour.
+
+---
+
+## 12. Accessibility Baseline
+
+- All text meets WCAG 2.1 AA contrast ratios (4.5:1 for normal text, 3:1 for large text)
+- All interactive elements have visible focus styles using `--focus-ring`
+- Minimum touch target: 44×44px on all interactive elements
+- All form inputs have associated `<label>` elements via `for`/`id`
+- All images have descriptive `alt` text; decorative images use `alt=""`
+- Icon-only buttons include `aria-label`
+- `prefers-reduced-motion` respected for all transitions (see Section 6.6)
