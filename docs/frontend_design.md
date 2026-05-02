@@ -29,7 +29,7 @@ These are the raw colour values. Never use these directly in components — alwa
 
 ```css
 /* Raw palette — do not use directly in components */
---color-linen:        #FAF1E8;
+--color-linen:        #FDFAF8; /* Warm off-white — sourced from Claude Design bundle for better contrast at small text sizes */
 --color-carbon:       #1B1C20;
 --color-blush:        #EDB1B0;
 --color-slate:        #5B6E7D;
@@ -44,7 +44,7 @@ Semantic tokens are what components use. They map to base tokens differently per
 ```css
 :root {
     /* Surfaces */
-    --surface-base:     #FAF1E8; /* Page background */
+    --surface-base:     #FDFAF8; /* Page background — warm off-white, never pure white */
     --surface-card:     #FFFFFF; /* Card, panel surfaces — slight lift over base */
     --surface-elevated: #F5EDE0; /* Modals, dropdowns */
 
@@ -128,8 +128,8 @@ Semantic tokens are what components use. They map to base tokens differently per
 - **Powder Blush (`--accent-warm`) on buttons:** text must always be `--text-on-blush` (`#5C0403`). Never Carbon Black, never white.
 - **Black Cherry (`#5C0403`) as destructive:** only used for delete confirmations, error text, and text on blush surfaces. Never used decoratively.
 - **Blue Slate (`--accent-cool`):** secondary information, muted labels, empty states, the "calm" partner to blush's warmth.
-- **Linen (`--surface-base`) in light mode:** the page background is never pure white. White would undermine the warmth.
-- **Dark mode surfaces:** three levels. `--surface-base` for pages, `--surface-card` for cards and panels, `--surface-elevated` for modals. Using all three creates visual depth without needing shadows.
+- **Linen (`--surface-base`) in light mode:** the page background is never pure white. `#FDFAF8` provides warmth while giving body text better contrast at small sizes than the rawer `#FAF1E8`.
+- **Dark mode surfaces:** three levels. `--surface-base` for pages, `--surface-card` for cards and panels, `--surface-elevated` for modals. The surface colour difference alone provides elevation — shadows are suppressed in dark mode.
 
 ---
 
@@ -384,10 +384,16 @@ These three components are used everywhere. All other components extend them. Ne
     border: 1px solid var(--border-subtle);
     border-radius: var(--radius-lg);
     padding: var(--space-6);
+    box-shadow: 0 2px 8px rgba(27, 28, 32, 0.06), 0 1px 2px rgba(27, 28, 32, 0.04);
+}
+
+/* Dark mode — shadows suppressed, surface colour difference provides elevation */
+[data-theme='dark'] .card {
+    box-shadow: none;
 }
 ```
 
-Cards never have drop shadows in light mode — the border provides sufficient separation from the Linen background. In dark mode, the surface colour difference between `--surface-base` and `--surface-card` provides elevation.
+Cards use a Level 1 subtle shadow in light mode (sourced from Claude Design bundle). The shadow is soft enough to stay warm and never compete with content. In dark mode, shadows are removed — the contrast between `--surface-base` and `--surface-card` provides elevation without them.
 
 ---
 
@@ -433,7 +439,7 @@ export default {
     theme: {
         extend: {
             colors: {
-                linen:  '#FAF1E8',
+                linen:  '#FDFAF8',
                 carbon: '#1B1C20',
                 blush:  '#EDB1B0',
                 slate:  '#5B6E7D',
@@ -504,3 +510,46 @@ export const useUiStore = defineStore('ui', () => {
 - All images have descriptive `alt` text; decorative images use `alt=""`
 - Icon-only buttons include `aria-label`
 - `prefers-reduced-motion` respected for all transitions (see Section 6.6)
+
+---
+
+## 13. Voice, Tone & Microcopy
+
+*Sourced from Claude Design bundle README. Applies to all UI-written strings — nav labels, empty states, prompts, button copy, page headings.*
+
+### 13.1 Core tone
+
+Biku is an intimate private space, not a product. Copy should feel like a soft whisper between two people — never a feature announcement, never corporate filler. Think: a well-kept shared journal.
+
+- **Intimate and warm** — write as if only two people will ever read it
+- **Understated romance** — affectionate but never saccharine; no "💕 lovebirds!" energy
+- **Unhurried** — short sentences, generous pauses; let content breathe
+
+### 13.2 Grammar & case rules
+
+- **First-person plural always** — `"our memories"`, `"our map"`, `"our lists"`, `"we have 3 upcoming dates"`. Never `"your memories"` or `"your lists"`.
+- **Lowercase-first** — nav labels, headings, and CTAs use sentence-case at most. Many labels are all-lowercase for a soft, unassuming feel: `"add a memory"`, `"how's your heart today?"`.
+- **No emoji in UI chrome** — emoji are reserved strictly for user-generated content (memory notes, mood entries). Never in buttons, nav labels, headings, or empty states.
+
+### 13.3 Microcopy examples
+
+| Context | Copy |
+|---|---|
+| Empty memories state | `"nothing here yet — add your first memory together."` |
+| Mood prompt | `"how's your heart today?"` |
+| Date idea CTA | `"plan something special."` |
+| Shared list label | `"our list"` |
+| Dashboard greeting | `"good morning, [name]."` |
+| Dashboard day count | `"[n] days of choosing each other."` (italic Lora) |
+| Pair page prompt | `"invite your person."` |
+| Unpaired preview banner | `"invite your partner to unlock everything"` |
+| Memory form image prompt | `"find a photo for this moment"` |
+| Randomiser result CTA | `"let's do this"` |
+
+### 13.4 What to avoid
+
+- Feature-announcement language: ~~"Track your moods with our powerful mood tracker"~~
+- Second person: ~~"Your memories"~~, ~~"You have 3 dates coming up"~~
+- Exclamation marks in UI chrome
+- Emoji in buttons or navigation
+- Passive empty states: ~~"No memories found"~~ → `"nothing here yet — add your first memory together."`

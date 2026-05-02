@@ -1,0 +1,23 @@
+{
+	"name": "biku-server",
+	"version": "0.0.1",
+	"private": true,
+	"type": "module",
+	"scripts": {
+		"dev":     "bun run --watch src/app.js",
+		"start":   "bun run src/app.js",
+		"migrate": "bun run src/db/migrate.js",
+		"seed":    "bun run src/db/seed.js"
+	},
+	"dependencies": {
+		"@fastify/cookie":  "^9.3.1",
+		"@fastify/cors":    "^9.0.1",
+		"drizzle-orm":      "^0.30.10",
+		"fastify":          "^4.26.2",
+		"jose":             "^5.2.4",
+		"zod":              "^3.22.4"
+	},
+	"devDependencies": {
+		"drizzle-kit": "^0.20.17"
+	}
+}
