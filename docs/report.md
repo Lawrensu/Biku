@@ -39,15 +39,12 @@ Being explicit about what is and is not built is an engineering discipline. Scop
 - Important dates tracking with anniversary countdown. 
 - Shared lists across three types: bucket, grocery, and wishlist. 
 - Mood tracking with Chart.js visualisation. 
-- Date night randomiser drawing from a locally seeded idea database.
+- Date night randomiser with AI-generated suggestions via Gemini 2.5 Flash, with graceful fallback to a locally seeded idea database.
 - Unpaired user state that previews features to encourage pairing.
 
 **Explicitly out of scope:**
 - Real-time messaging or chat. 
 - Push notifications or service workers. 
-- AI-powered date suggestions (architecture is kept open for this extension, but it is not implemented). 
-	- The AI extension for the date randomiser is a deliberate future hook. 
-	- The `date_ideas` table is seeded locally for submission, but the randomiser route is designed so that an AI API call can be substituted as the data source later with minimal architectural change.
 - Native mobile application. 
 - More than two users per couple relationship. 
 - Account deletion flow.
@@ -100,15 +97,16 @@ Drizzle is chosen over Prisma because Prisma is optimised for PostgreSQL-first w
 
 ### 5.4 Authentication
 - JWT (JSON Web Tokens) stored in `httpOnly` cookies.
-- Tokens in `localStorage` are accessible via JavaScript and therefore vulnerable to XSS attacks. `httpOnly` cookies cannot be read by JavaScript at all as they are sent automatically with requests by the browser. For an application storing personal relationship data, this is the correct choice. Password hashing uses argon2id, which is the current OWASP-recommended algorithm, preferred over bcrypt for new systems.
+- Tokens in `localStorage` are accessible via JavaScript and therefore vulnerable to XSS attacks. `httpOnly` cookies cannot be read by JavaScript at all as they are sent automatically with requests by the browser. For an application storing personal relationship data, this is the correct choice. Password hashing uses bcrypt via Bun's built-in `Bun.password` API, which provides a secure, constant-time comparison and automatic salt generation.
 
 ### 5.5 External APIs
 
 |API|Role|Cost|Authentication|
 |---|---|---|---|
 |Unsplash API|Memory background image search|Free, 50 requests per hour (demo tier)|API key, free, no credit card|
-|Open-Meteo|Historical weather on memory dates|Free, no rate limit for non-commercial use|None — no key, no registration|
+|Open-Meteo|Historical weather on memory dates|Free, no rate limit for non-commercial use|None : no key, no registration|
 |Leaflet + OpenStreetMap|Interactive memory map tiles|Free, open-source|None|
+|Google Gemini 2.5 Flash|AI-generated date night suggestions|Free tier via Google AI Studio|API key, free, no credit card|
 
 **Why Open-Meteo over OpenWeatherMap:** 
 - OpenWeatherMap's historical weather endpoints require a paid subscription and a credit card on file, even for the free tier.
@@ -140,12 +138,13 @@ This section maps every HD-qualifying implementation to the rubric criterion it 
 |Unsplash|Memory creation — debounced image search fires as the user types a title|Rich, contextual memory visuals without requiring photo uploads|
 |Open-Meteo|Memory detail — historical weather fetched once per memory and cached permanently|Emotional context ("it was raining that day")|
 |Leaflet + OSM|`/map` — every memory with coordinates is plotted as a clickable pin|A visual geographic journey of the relationship|
+|Gemini 2.5 Flash|Date randomiser — AI generates a personalised date idea based on mood, budget, and time filters|Fresh, contextual date suggestions beyond the static seed pool; falls back gracefully to local seeds on failure|
 
 ### 6.3 Performance Optimisations
 
 |Optimisation|Implementation|Why It Matters|
 |---|---|---|
-|Weather response caching|Open-Meteo response stored as JSON in the `memories` table on first fetch|Historical weather for a given date never changes — no reason to call the API twice|
+|Weather response caching|Open-Meteo response stored as JSON in the `memories` table on first fetch|Historical weather for a given date never changes, no reason to call the API twice|
 |Debounced Unsplash search|Image search fires after a 400ms pause in typing|Prevents unnecessary API calls on every keystroke|
 |Lazy image loading|Intersection Observer on memory card images|Defers off-screen image loads in the journal feed|
 |Route-level code splitting|Dynamic imports produce per-route chunks|Reduces initial bundle size, faster first load|
@@ -154,10 +153,10 @@ This section maps every HD-qualifying implementation to the rubric criterion it 
 
 | Interaction                | Technology                                                            | Where                  |
 | -------------------------- | --------------------------------------------------------------------- | ---------------------- |
-| Dual-line mood chart       | Chart.js via vue-chartjs — both partners' 30-day mood overlaid        | `/mood`                |
+| Dual-line mood chart       | Chart.js via vue-chartjs : both partners' 30-day mood overlaid        | `/mood`                |
 | Drag-to-reorder list items | Vue Draggable (SortableJS)                                            | `/lists`               |
 | Live anniversary countdown | `useCountdown()` composable with `setInterval`, cleaned up on unmount | `/dashboard`, `/dates` |
-| Clickable memory map pins  | Leaflet.js — pins open a memory preview card                          | `/map`                 |
+| Clickable memory map pins  | Leaflet.js : pins open a memory preview card                          | `/map`                 |
 | Animated page transitions  | Vue `<Transition>` component with CSS                                 | All routes             |
 
 ---
