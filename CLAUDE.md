@@ -112,8 +112,8 @@ Biku/
 ```
 PORT=3000
 JWT_SECRET=biku-dev-secret-change-in-production
-UNSPLASH_ACCESS_KEY=Xqcl05F_kWfMKE252l0vmZhjPRwxj9B4-eLldyDINtU
-GEMINI_API_KEY=AIzaSyBbx217emj5JBYpZ7_TsjBCrnozgpSB9zo
+UNSPLASH_ACCESS_KEY=<see server/.env — never commit actual key>
+GEMINI_API_KEY=<see server/.env — never commit actual key>
 DATABASE_URL=./biku.db
 ```
 
