@@ -5,7 +5,7 @@ export default {
 	theme: {
 		extend: {
 			colors: {
-				linen:        '#FAF1E8',
+				linen:        '#FDFAF8',
 				carbon:       '#1B1C20',
 				blush:        '#EDB1B0',
 				slate:        '#5B6E7D',

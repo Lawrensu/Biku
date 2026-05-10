@@ -222,10 +222,10 @@ CREATE TABLE important_dates (
 
 
 -- date_ideas
--- Seed data for the date night randomiser.
+-- Seed data for the date night randomiser fallback.
 -- Not user-created. Populated by the seed script at initialisation.
--- Architecture is open for AI API substitution in future — this table
--- can be bypassed by swapping the data source in the randomiser route.
+-- The randomiser route calls Gemini 2.0 Flash first (GEMINI_API_KEY in .env).
+-- This table is only queried when the AI call fails or the key is absent.
 CREATE TABLE date_ideas (
     id          TEXT PRIMARY KEY,
     title       TEXT NOT NULL,
@@ -514,10 +514,20 @@ DELETE /api/dates/:id
 ```
 GET    /api/date-ideas
        Query:    ?budget=1&category=outdoor&max_duration=120
-       Filters seeded date_ideas table and returns a random selection
+       Calls Gemini 2.0 Flash to generate a date idea matching the filters.
+       Falls back to the seeded date_ideas table if AI is unavailable.
+       Response includes a "source" field: "ai" | "seed"
        Guard:    requiresAuth, requiresPaired
-       Response: { ideas: [] }
+       Response: { idea, source }
 ```
+
+AI integration notes:
+- Model: gemini-2.5-flash (Google AI Studio free tier — latest stable Flash model, free tier pricing)
+- Key configured via GEMINI_API_KEY in .env
+- Prompt requests a single structured JSON object; response is parsed and validated
+- Any failure (network, quota, malformed JSON) silently falls back to seed table
+- AI-generated ideas return id: null — they are ephemeral, not persisted to the database
+- Advanced technique for HD report: AI-generated content with graceful degradation
 
 ### 4.9 External API Proxy Routes
 

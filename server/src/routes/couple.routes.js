@@ -3,6 +3,7 @@ import { db } from '../db/index.js';
 import { users, couples } from '../db/schema.js';
 import { eq } from 'drizzle-orm';
 import { generateId } from '../utils/uuid.js';
+import { issueToken, COOKIE_OPTS } from '../utils/jwt.js';
 import { requiresAuth } from '../middleware/auth.middleware.js';
 import { requiresPaired } from '../middleware/pair.middleware.js';
 
@@ -101,6 +102,12 @@ export async function coupleRoutes(fastify) {
 		// Set couple_id on both user records
 		db.update(users).set({ coupleId: couple.id }).where(eq(users.id, couple.partnerAId)).run();
 		db.update(users).set({ coupleId: couple.id }).where(eq(users.id, user.id)).run();
+
+		// Reissue JWT for the joining user with coupleId now set —
+		// without this the requiresPaired middleware would still see coupleId: null
+		const freshUser = db.select().from(users).where(eq(users.id, user.id)).get();
+		const token = await issueToken(freshUser);
+		reply.setCookie('token', token, COOKIE_OPTS);
 
 		const updated = db.select().from(couples).where(eq(couples.id, couple.id)).get();
 		return reply.send({ couple: updated });

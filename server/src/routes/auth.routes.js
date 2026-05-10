@@ -1,34 +1,12 @@
-import { SignJWT } from 'jose';
 import { z } from 'zod';
 import { db } from '../db/index.js';
 import { users, couples } from '../db/schema.js';
 import { eq } from 'drizzle-orm';
 import { generateId } from '../utils/uuid.js';
 import { hashPassword, verifyPassword } from '../utils/hash.js';
+import { issueToken, COOKIE_OPTS } from '../utils/jwt.js';
 import { requiresAuth } from '../middleware/auth.middleware.js';
 
-
-const secret = new TextEncoder().encode(process.env.JWT_SECRET);
-const COOKIE_OPTS = {
-	httpOnly: true,
-	sameSite: 'lax',
-	path: '/',
-	// secure: true in production — omitted here so dev over HTTP works
-	maxAge: 60 * 60 * 24 * 7, // 7 days
-};
-
-async function issueToken(user) {
-	return new SignJWT({
-		id:          user.id,
-		email:       user.email,
-		displayName: user.displayName,
-		coupleId:    user.coupleId ?? null,
-	})
-		.setProtectedHeader({ alg: 'HS256' })
-		.setIssuedAt()
-		.setExpirationTime('7d')
-		.sign(secret);
-}
 
 const registerSchema = z.object({
 	email:        z.string().email(),
@@ -107,9 +85,16 @@ export async function authRoutes(fastify) {
 
 
 	fastify.get('/api/auth/me', { preHandler: requiresAuth }, async (request, reply) => {
+		// Always read from DB — the JWT may be stale if the user just paired
 		const user = db.select().from(users).where(eq(users.id, request.user.id)).get();
 		if (!user) {
 			return reply.code(401).send({ error: 'user not found', code: 'UNAUTHENTICATED' });
+		}
+
+		// Reissue JWT if coupleId has changed since it was last issued (e.g. partner just joined)
+		if ((user.coupleId ?? null) !== (request.user.coupleId ?? null)) {
+			const token = await issueToken(user);
+			reply.setCookie('token', token, COOKIE_OPTS);
 		}
 
 		let couple = null;
@@ -122,7 +107,6 @@ export async function authRoutes(fastify) {
 }
 
 
-// Strip passwordHash before sending any user object to the client
 function sanitise(user) {
 	const { passwordHash, ...safe } = user;
 	return safe;
