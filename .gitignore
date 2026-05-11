@@ -1,3 +1,41 @@
+# Dependencies
+node_modules/
+package-lock.json
+bun.lockb
+
+# Environment
+.env
+.env.local
+.env.*.local
+
+# Project files
+.claude/
+biku.db
+
+# Build & dist
+dist/
+build/
+.next/
+out/
+
+# IDE & editor
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+
+# OS
+Thumbs.db
+.DS_Store
+
+# Logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
 .claude/*
-!.claude/CLAUDE.md
+.claude/CLAUDE.md
 .env*
