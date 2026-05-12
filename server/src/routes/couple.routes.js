@@ -63,6 +63,16 @@ export async function coupleRoutes(fastify) {
 
 		db.insert(couples).values(couple).run();
 
+		// Link the couple back to the creator — without this the creator's coupleId
+		// stays null and /api/auth/me never triggers a JWT reissue
+		db.update(users).set({ coupleId: couple.id }).where(eq(users.id, user.id)).run();
+
+		// Reissue JWT immediately so the creator can access paired routes without
+		// needing a /api/auth/me round-trip first
+		const freshUser = db.select().from(users).where(eq(users.id, user.id)).get();
+		const token = await issueToken(freshUser);
+		reply.setCookie('token', token, COOKIE_OPTS);
+
 		return reply.code(201).send({ couple, invite_code: inviteCode });
 	});
 

@@ -22,15 +22,21 @@ export const useAuthStore = defineStore('auth', () => {
 
 	// Resolves current auth state from the server. Called by the router guard.
 	// Pass force = true to bypass the cache (e.g. after pairing).
+	//
+	// _fetched is always set to true in the finally block so repeated navigations
+	// don't fire redundant network requests once auth state is known (logged-in or
+	// not). clearUser() resets it to false so an explicit logout or a page refresh
+	// forces a fresh check on the very next navigation.
 	async function fetchMe(force = false) {
 		if (_fetched.value && !force) return
 
 		try {
-			const data  = await apiFetchMe()
-			user.value  = data.user
+			const data = await apiFetchMe()
+			user.value = data.user
 		} catch {
-			// 401 is handled globally in apiFetch — other errors mean unauthenticated
-			user.value  = null
+			// 401 is handled globally in apiFetch (dispatches biku:unauthorized).
+			// Any other error also means we cannot confirm auth — treat as guest.
+			user.value = null
 		} finally {
 			_fetched.value = true
 		}
