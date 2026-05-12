@@ -1,0 +1,77 @@
+import { defineStore } from 'pinia'
+import { ref, computed } from 'vue'
+import {
+	fetchMe  as apiFetchMe,
+	login    as apiLogin,
+	register as apiRegister,
+	logout   as apiLogout,
+} from '../services/auth.service.js'
+
+
+export const useAuthStore = defineStore('auth', () => {
+	const user     = ref(null)
+	// Tracks whether we've already resolved auth state this session.
+	// The router guard calls fetchMe() on every navigation — this flag
+	// prevents redundant network requests once auth is known.
+	const _fetched = ref(false)
+
+
+	const isLoggedIn = computed(() => !!user.value)
+	const isPaired   = computed(() => !!user.value?.coupleId)
+
+
+	// Resolves current auth state from the server. Called by the router guard.
+	// Pass force = true to bypass the cache (e.g. after pairing).
+	async function fetchMe(force = false) {
+		if (_fetched.value && !force) return
+
+		try {
+			const data  = await apiFetchMe()
+			user.value  = data.user
+		} catch {
+			// 401 is handled globally in apiFetch — other errors mean unauthenticated
+			user.value  = null
+		} finally {
+			_fetched.value = true
+		}
+	}
+
+
+	async function login(email, password) {
+		const data     = await apiLogin(email, password)
+		user.value     = data.user
+		_fetched.value = true
+	}
+
+
+	async function register(email, password, displayName) {
+		const data     = await apiRegister(email, password, displayName)
+		user.value     = data.user
+		_fetched.value = true
+	}
+
+
+	async function logout() {
+		await apiLogout()
+		clearUser()
+	}
+
+
+	// Called by App.vue when the global 'biku:unauthorized' event fires
+	function clearUser() {
+		user.value     = null
+		_fetched.value = false
+	}
+
+
+	return {
+		user,
+		isLoggedIn,
+		isPaired,
+		fetchMe,
+		login,
+		register,
+		logout,
+		clearUser,
+	}
+})

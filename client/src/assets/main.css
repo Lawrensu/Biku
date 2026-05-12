@@ -1,0 +1,367 @@
+/* ============================================================
+   Biku — main.css
+   Tailwind v4 entry point + semantic design token layer.
+
+   Structure:
+   1. Tailwind import (utilities, reset, base)
+   2. Raw palette (reference only — never use directly in components)
+   3. Semantic tokens — :root (light mode)
+   4. Semantic tokens — [data-theme="dark"]
+   5. Typography tokens
+   6. Spacing scale
+   7. Border radius tokens
+   8. Motion tokens
+   9. Base resets
+   10. Page transition classes (used by <Transition name="page">)
+   11. List transition classes (used by <TransitionGroup name="list">)
+   12. Card base class
+   13. prefers-reduced-motion override
+   ============================================================ */
+
+@import "tailwindcss";
+
+
+/* ── 2. Raw palette (do NOT use directly in components) ──── */
+
+/*
+	--color-linen:        #FDFAF8
+	--color-carbon:       #1B1C20
+	--color-blush:        #EDB1B0
+	--color-slate:        #5B6E7D
+	--color-cherry:       #5C0403
+	--color-cherry-tint:  #F5E8E8
+*/
+
+
+/* ── 3. Semantic tokens — light mode ─────────────────────── */
+
+:root {
+	/* Surfaces */
+	--surface-base:     #FDFAF8; /* page background — warm off-white, never pure white */
+	--surface-card:     #FFFFFF; /* cards, panels — slight lift over base */
+	--surface-elevated: #F5EDE0; /* modals, dropdowns */
+
+	/* Text */
+	--text-primary:   #1B1C20;
+	--text-secondary: #5B6E7D;
+	--text-muted:     #8A9BA6;
+	--text-on-blush:  #5C0403; /* text sitting on blush surfaces */
+	--text-on-dark:   #FAF1E8; /* text sitting on carbon/slate surfaces */
+
+	/* Brand */
+	--accent-warm: #EDB1B0; /* powder blush — primary brand accent */
+	--accent-cool: #5B6E7D; /* blue slate — secondary accent */
+
+	/* Destructive / Error */
+	--error-text:    #5C0403;
+	--error-surface: #F5E8E8;
+	--error-border:  #D4A0A0;
+
+	/* Interactive — primary button (blush) */
+	--btn-primary-bg:       #EDB1B0;
+	--btn-primary-text:     #5C0403;
+	--btn-primary-hover-bg: #E4A09F;
+
+	/* Interactive — secondary button (carbon) */
+	--btn-secondary-bg:       #1B1C20;
+	--btn-secondary-text:     #FAF1E8;
+	--btn-secondary-hover-bg: #2E2F35;
+
+	/* Borders */
+	--border-subtle:  rgba(27, 28, 32, 0.08);
+	--border-default: rgba(27, 28, 32, 0.15);
+	--border-strong:  rgba(27, 28, 32, 0.30);
+
+	/* Focus ring */
+	--focus-ring: #EDB1B0;
+}
+
+
+/* ── 4. Semantic tokens — dark mode ──────────────────────── */
+
+[data-theme='dark'] {
+	/* Surfaces — warm-dark stack, three levels of elevation */
+	--surface-base:     #1A1612; /* warm black */
+	--surface-card:     #242019; /* cards, panels */
+	--surface-elevated: #2E2920; /* modals, dropdowns */
+
+	/* Text */
+	--text-primary:   #FAF1E8; /* linen inverted to foreground */
+	--text-secondary: #9E9890;
+	--text-muted:     #6B6560;
+	--text-on-blush:  #5C0403; /* unchanged — blush surfaces exist in both modes */
+	--text-on-dark:   #FAF1E8;
+
+	/* Brand — identity colours, unchanged in dark mode */
+	--accent-warm: #EDB1B0;
+	--accent-cool: #5B6E7D;
+
+	/* Destructive / Error — lightened for legibility on dark surfaces */
+	--error-text:    #F0A0A0;
+	--error-surface: #2A1515;
+	--error-border:  #5C2020;
+
+	/* Interactive — primary button unchanged */
+	--btn-primary-bg:       #EDB1B0;
+	--btn-primary-text:     #5C0403;
+	--btn-primary-hover-bg: #E4A09F;
+
+	/* Interactive — secondary button inverted */
+	--btn-secondary-bg:       #FAF1E8;
+	--btn-secondary-text:     #1B1C20;
+	--btn-secondary-hover-bg: #EDE4D6;
+
+	/* Borders */
+	--border-subtle:  rgba(250, 241, 232, 0.06);
+	--border-default: rgba(250, 241, 232, 0.12);
+	--border-strong:  rgba(250, 241, 232, 0.24);
+
+	/* Focus ring — unchanged */
+	--focus-ring: #EDB1B0;
+}
+
+
+/* ── 5. Typography tokens ────────────────────────────────── */
+
+:root {
+	--font-heading: 'Plus Jakarta Sans', sans-serif;
+	--font-body:    'Lora', Georgia, serif;
+
+	/* Type scale */
+	--text-xs:   0.75rem;   /* 12px — labels, captions */
+	--text-sm:   0.875rem;  /* 14px — secondary body, metadata */
+	--text-base: 1rem;      /* 16px — primary body text */
+	--text-lg:   1.125rem;  /* 18px — lead paragraphs */
+	--text-xl:   1.25rem;   /* 20px — small headings */
+	--text-2xl:  1.5rem;    /* 24px — section headings */
+	--text-3xl:  1.875rem;  /* 30px — page headings */
+	--text-4xl:  2.25rem;   /* 36px — display / hero */
+
+	/* Weights */
+	--weight-regular:  400;
+	--weight-medium:   500;
+	--weight-semibold: 600;
+
+	/* Line heights */
+	--leading-tight:   1.25; /* headings */
+	--leading-snug:    1.4;  /* subheadings */
+	--leading-normal:  1.6;  /* UI text */
+	--leading-relaxed: 1.75; /* body / reading text */
+}
+
+
+/* ── 6. Spacing scale ────────────────────────────────────── */
+
+:root {
+	--space-1:  0.25rem;  /*  4px */
+	--space-2:  0.5rem;   /*  8px */
+	--space-3:  0.75rem;  /* 12px */
+	--space-4:  1rem;     /* 16px */
+	--space-5:  1.25rem;  /* 20px */
+	--space-6:  1.5rem;   /* 24px */
+	--space-8:  2rem;     /* 32px */
+	--space-10: 2.5rem;   /* 40px */
+	--space-12: 3rem;     /* 48px */
+	--space-16: 4rem;     /* 64px */
+	--space-20: 5rem;     /* 80px */
+}
+
+
+/* ── 7. Border radius tokens ─────────────────────────────── */
+
+:root {
+	--radius-sm:   6px;
+	--radius-md:   10px;
+	--radius-lg:   14px;
+	--radius-xl:   20px;
+	--radius-full: 9999px;
+}
+
+
+/* ── 8. Motion tokens ────────────────────────────────────── */
+
+:root {
+	/* Easing */
+	--ease-tender: cubic-bezier(0.25, 0.46, 0.45, 0.94); /* default — slow, gentle finish */
+	--ease-enter:  cubic-bezier(0.0,  0.0,  0.2,  1.0);  /* elements entering the screen */
+	--ease-exit:   cubic-bezier(0.4,  0.0,  1.0,  1.0);  /* elements leaving the screen */
+
+	/* Duration scale */
+	--duration-fast:   150ms; /* hover states, focus rings, small toggles */
+	--duration-normal: 250ms; /* component transitions — cards, list items */
+	--duration-slow:   350ms; /* page transitions */
+	--duration-tender: 400ms; /* emotional moments — memory reveal, countdown */
+}
+
+
+/* ── 9. Base resets ──────────────────────────────────────── */
+
+*,
+*::before,
+*::after {
+	box-sizing: border-box;
+}
+
+html {
+	-webkit-font-smoothing: antialiased;
+	-moz-osx-font-smoothing: grayscale;
+	text-rendering: optimizeLegibility;
+}
+
+body {
+	margin: 0;
+	background-color: var(--surface-base);
+	color: var(--text-primary);
+	font-family: var(--font-body);
+	font-size: var(--text-base);
+	line-height: var(--leading-normal);
+}
+
+h1, h2, h3, h4, h5, h6 {
+	font-family: var(--font-heading);
+	font-weight: var(--weight-semibold);
+	line-height: var(--leading-tight);
+	color: var(--text-primary);
+	margin: 0;
+}
+
+p {
+	margin: 0;
+}
+
+a {
+	color: inherit;
+	text-decoration: none;
+}
+
+img,
+video {
+	max-width: 100%;
+	display: block;
+}
+
+button {
+	cursor: pointer;
+	font-family: var(--font-heading);
+}
+
+input,
+textarea,
+select {
+	font-family: var(--font-body);
+}
+
+/* Remove default focus outline — components apply their own via --focus-ring */
+:focus {
+	outline: none;
+}
+
+:focus-visible {
+	outline: 2px solid var(--focus-ring);
+	outline-offset: 2px;
+}
+
+
+/* ── 10. Page transitions (<Transition name="page">) ─────── */
+
+.page-enter-active {
+	transition:
+		opacity  var(--duration-slow)   var(--ease-enter),
+		transform var(--duration-slow)  var(--ease-enter);
+}
+
+.page-leave-active {
+	transition:
+		opacity   var(--duration-normal) var(--ease-exit),
+		transform var(--duration-normal) var(--ease-exit);
+}
+
+.page-enter-from {
+	opacity: 0;
+	transform: translateY(12px);
+}
+
+.page-leave-to {
+	opacity: 0;
+	transform: translateY(-8px);
+}
+
+
+/* ── 11. List transitions (<TransitionGroup name="list">) ── */
+
+.list-enter-active {
+	transition: all var(--duration-normal) var(--ease-enter);
+}
+
+.list-leave-active {
+	transition: all var(--duration-fast) var(--ease-exit);
+	/* keep the item in flow while fading so siblings don't jump */
+	position: absolute;
+	width: 100%;
+}
+
+.list-enter-from {
+	opacity: 0;
+	transform: translateY(8px);
+}
+
+.list-leave-to {
+	opacity: 0;
+	transform: translateX(-8px);
+}
+
+/* Smooth sibling repositioning when a list item is removed */
+.list-move {
+	transition: transform var(--duration-normal) var(--ease-tender);
+}
+
+
+/* ── 12. Card base class ─────────────────────────────────── */
+
+.card {
+	background:    var(--surface-card);
+	border:        1px solid var(--border-subtle);
+	border-radius: var(--radius-lg);
+	padding:       var(--space-6);
+	box-shadow:
+		0 2px 8px rgba(27, 28, 32, 0.06),
+		0 1px 2px rgba(27, 28, 32, 0.04);
+}
+
+/* Shadows suppressed in dark mode — surface colour difference provides elevation */
+[data-theme='dark'] .card {
+	box-shadow: none;
+}
+
+/* Interactive card — used by MemoryCard and similar clickable surfaces */
+.card-interactive {
+	transition:
+		transform   var(--duration-fast) var(--ease-tender),
+		box-shadow  var(--duration-fast) var(--ease-tender);
+	cursor: pointer;
+}
+
+.card-interactive:hover {
+	transform: translateY(-2px);
+	box-shadow:
+		0 6px 20px rgba(27, 28, 32, 0.10),
+		0 2px 6px  rgba(27, 28, 32, 0.06);
+}
+
+[data-theme='dark'] .card-interactive:hover {
+	box-shadow: none;
+}
+
+
+/* ── 13. prefers-reduced-motion ──────────────────────────── */
+
+@media (prefers-reduced-motion: reduce) {
+	*,
+	*::before,
+	*::after {
+		animation-duration:        0.01ms !important;
+		animation-iteration-count: 1      !important;
+		transition-duration:       0.01ms !important;
+		scroll-behavior:           auto   !important;
+	}
+}
