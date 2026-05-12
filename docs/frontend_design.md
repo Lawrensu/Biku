@@ -553,3 +553,94 @@ Biku is an intimate private space, not a product. Copy should feel like a soft w
 - Exclamation marks in UI chrome
 - Emoji in buttons or navigation
 - Passive empty states: ~~"No memories found"~~ → `"nothing here yet — add your first memory together."`
+
+---
+
+## 14. Implementation Patterns (emerged during build)
+
+These patterns were established during Steps 5–10 and must be followed consistently across all components.
+
+### 14.1 Form state — use `reactive`, not `ref`
+
+For form objects, always use `reactive({ ... })` rather than `ref({ ... })`. This avoids the `.value` confusion in templates (Vue auto-unwraps `ref` at the top level, making `form.value.X` wrong in a template — it accesses a non-existent `value` key on the inner object).
+
+```js
+// ✅ correct
+const form = reactive({ title: '', email: '', password: '' })
+// template: v-model="form.title"
+
+// ❌ wrong
+const form = ref({ title: '', email: '', password: '' })
+// template: v-model="form.title" is correct but v-model="form.value.title" is not
+```
+
+### 14.2 Passing reactive data to composables
+
+When passing data to composables that hasn't loaded yet (e.g. from an async store), pass the computed ref itself — not `.value`. The composable uses `toValue()` internally to unwrap it reactively.
+
+```js
+// ✅ correct — composable re-triggers when couple loads
+const anniversaryDate = computed(() => couple.couple?.anniversaryDate)
+const { days } = useCountdown(anniversaryDate, true)
+
+// ❌ wrong — evaluates to undefined at setup time, never updates
+const { days } = useCountdown(anniversaryDate.value, true)
+```
+
+### 14.3 Sidebar page layout offset
+
+All content pages (not landing/auth) must offset their left margin to account for the sidebar on tablet and desktop. Use this pattern at the top of every view's scoped styles:
+
+```css
+/* Sidebar offset — matches AppNavbar widths */
+@media (min-width: 768px)  { .page-name { margin-left: 64px;  } }
+@media (min-width: 1024px) { .page-name { margin-left: 200px; } }
+```
+
+Mobile bottom nav is handled by adding bottom padding: `padding-bottom: calc(var(--space-16) + env(safe-area-inset-bottom))`.
+
+### 14.4 Heavy dependencies — always lazy
+
+Three packages must never enter the initial bundle:
+- **Leaflet**: imported dynamically inside `MemoryMap.vue`'s `onMounted`. `MemoryMap` is itself loaded via `defineAsyncComponent` in `MapView`.
+- **chart.js**: statically imported in `MoodChart.vue`, but since `MoodChart` is only used by `MoodView` and `MoodView` is a lazy route, it stays out of the initial bundle automatically.
+- **vue-draggable-plus**: same pattern as chart.js — in `ListContainer` → `ListsView` (lazy route).
+
+Never import these at the top level of `main.js` or `App.vue`.
+
+### 14.5 Empty states
+
+Every list view must render a meaningful empty state — never a blank screen. Pattern:
+
+```html
+<p v-else class="page__empty">
+    nothing here yet — <RouterLink to="/route/new">add your first one</RouterLink>
+</p>
+```
+
+Style with `font-family: var(--font-body); color: var(--text-muted); font-size: var(--text-sm)`.
+
+### 14.6 API error handling in views
+
+Views use a consistent try/catch pattern. Errors are shown inline, never as alerts or thrown to the top level:
+
+```js
+const error = ref('')
+const loading = ref(false)
+
+async function load() {
+    loading.value = true
+    try {
+        const data = await someService.get()
+        items.value = data?.items ?? []
+    } catch (e) {
+        error.value = e.message || 'something went wrong'
+    } finally {
+        loading.value = false
+    }
+}
+```
+
+### 14.7 Unsplash attribution
+
+When displaying Unsplash images, attribution is required. `MemoryDetailView` overlays an attribution element on the cover image. Any other view showing Unsplash images must do the same. The attribution format is: `"photo by [author] on Unsplash"` with links to the author URL and `https://unsplash.com`.
