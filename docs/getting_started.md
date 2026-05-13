@@ -55,6 +55,16 @@ GEMINI_API_KEY=<key from Google AI Studio>
 DATABASE_URL=./biku.db
 ```
 
+**JWT_SECRET:** Any long random string works. Generate one with:
+
+```bash
+node -e "console.log(require('crypto').randomBytes(32).toString('hex'))"
+# or with Bun:
+bun -e "console.log(require('crypto').randomBytes(32).toString('hex'))"
+```
+
+The dev default (`biku-dev-secret-change-in-production`) is fine for local development, only replace it for a production deployment (future plan of this project).
+
 **Unsplash:** Register at https://unsplash.com/developers, create an app, copy the Access Key.
 
 **Gemini:** Go to https://aistudio.google.com → Get API key → Create API key in new project. Free tier gives access to `gemini-2.5-flash` at no cost. If the key is absent or the call fails, the randomiser falls back to the seeded date ideas silently.

@@ -7,19 +7,20 @@ const router = useRouter()
 	<div class="landing">
 		<!-- Breathing ASCII art — sits behind the foreground content -->
 		<pre class="landing__art" aria-hidden="true">
-  ██████╗ ██╗██╗  ██╗██╗   ██╗
-  ██╔══██╗██║██║ ██╔╝██║   ██║
-  ██████╔╝██║█████╔╝ ██║   ██║
-  ██╔══██╗██║██╔═██╗ ██║   ██║
-  ██████╔╝██║██║  ██╗╚██████╔╝
-  ╚═════╝ ╚═╝╚═╝  ╚═╝ ╚═════╝
+  ____  ___ _  ___  _
+ | __ )| | | |/ / || |
+ |  _ \| | |   /| || |_
+ | |_) | | /   \|__   _|
+ |____/|_|/_/|_\  |_|
 
-          ♡  ♡  ♡
 
-        ／|    |＼
-       ( •‿•)  (•‿• )
-       /  づ  づ  \
-      ♡ together  ♡
+      .  .  .
+
+    /|        |\
+   ( o )    ( o )
+    \  \    /  /
+     `--------'
+      together
 		</pre>
 
 		<!-- Foreground content -->
@@ -50,7 +51,7 @@ const router = useRouter()
 	overflow:        hidden;
 }
 
-/* ── Breathing ASCII art ────────────────────────────────────────────────────── */
+/* -- Breathing ASCII art --------------------------------------------------- */
 
 .landing__art {
 	position:    absolute;
@@ -61,8 +62,8 @@ const router = useRouter()
 	align-items: center;
 	justify-content: center;
 	font-family: 'Courier New', monospace;
-	font-size:   clamp(6px, 1.2vw, 14px);
-	line-height: 1.35;
+	font-size:   clamp(8px, 1.4vw, 16px);
+	line-height: 1.4;
 	color:       var(--color-carbon);
 	opacity:     0.14;
 	white-space: pre;
@@ -83,7 +84,7 @@ const router = useRouter()
 	color: var(--color-linen);
 }
 
-/* ── Foreground ─────────────────────────────────────────────────────────────── */
+/* -- Foreground ------------------------------------------------------------- */
 
 .landing__content {
 	position:        relative;
@@ -128,7 +129,7 @@ const router = useRouter()
 	padding:    var(--space-3) var(--space-6);
 }
 
-/* ── Reduced-motion: disable breathing ─────────────────────────────────────── */
+/* -- Reduced-motion: disable breathing ------------------------------------- */
 @media (prefers-reduced-motion: reduce) {
 	.landing__art { animation: none; opacity: 0.14; }
 }
