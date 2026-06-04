@@ -65,12 +65,12 @@ const initials = computed(() => {
 
 	<!-- ── Tablet + Desktop: fixed left sidebar (≥ 768px) ──────────────────── -->
 	<nav class="nav-sidebar" aria-label="primary navigation">
-		<!-- Logo at the top -->
-		<div class="nav-sidebar__logo">
+		<!-- Logo at the top — clicking navigates to dashboard -->
+		<RouterLink to="/dashboard" class="nav-sidebar__logo" aria-label="biku home">
 			<!-- Icon-only on tablet, full logo on desktop -->
 			<AppLogo class="nav-sidebar__logo--icon" variant="icon" :size="28" />
-			<AppLogo class="nav-sidebar__logo--full" variant="full"  :size="24" />
-		</div>
+			<AppLogo class="nav-sidebar__logo--full" variant="full"  :size="32" />
+		</RouterLink>
 
 		<!-- Primary links -->
 		<ul class="nav-sidebar__list" role="list">
@@ -212,8 +212,10 @@ const initials = computed(() => {
 .nav-sidebar__logo {
 	display:         flex;
 	align-items:     center;
-	justify-content: center;
+	justify-content: center;    /* tablet: centre the icon in the 64px strip */
 	padding:         var(--space-5) 0 var(--space-4);
+	text-decoration: none;      /* reset RouterLink underline */
+	color:           inherit;
 }
 
 /* Show icon on tablet, full logo on desktop */
@@ -221,12 +223,16 @@ const initials = computed(() => {
 .nav-sidebar__logo--full { display: none;  }
 
 @media (min-width: 1024px) {
+	.nav-sidebar__logo {
+		justify-content: flex-start;           /* left-align with the nav items */
+		padding-left:    var(--space-4);       /* matches .nav-sidebar__item indent */
+	}
 	.nav-sidebar__logo--icon { display: none;        }
 	/*
 		Must be inline-flex, NOT block — block overrides AppLogo's own
 		display:inline-flex, causing the heart SVG and text to stack vertically.
 	*/
-	.nav-sidebar__logo--full { display: inline-flex; padding-left: var(--space-4); }
+	.nav-sidebar__logo--full { display: inline-flex; }
 }
 
 .nav-sidebar__list {

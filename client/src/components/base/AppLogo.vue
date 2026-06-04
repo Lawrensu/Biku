@@ -49,21 +49,29 @@ defineProps({
 .app-logo {
 	display:     inline-flex;
 	align-items: center;
-	gap:         var(--space-2);
+	gap:         var(--space-3);  /* was space-2 — more breathing room at larger scale */
 	user-select: none;
 }
 
 .app-logo__wordmark {
 	font-family:    var(--font-heading);
-	font-weight:    500;           /* was 600 — softer, less corporate */
-	letter-spacing: 0.01em;        /* was 0.06em — tighter, warmer */
+	font-weight:    500;
+	letter-spacing: 0.01em;
 	color:          var(--text-primary);
 	line-height:    1;
 }
 
-/* Scale wordmark to match icon size */
-.app-logo--full .app-logo__wordmark,
+/*
+	Full variant: wordmark is a fixed, prominent size — decoupled from the icon
+	size so it reads clearly regardless of how the icon is scaled.
+	Previously: calc(size * 0.65px) which gave ~15.6px at size=24 — too small.
+*/
+.app-logo--full .app-logo__wordmark {
+	font-size: var(--text-xl);   /* 20px — readable, confident, but not overpowering */
+}
+
+/* Wordmark-only variant follows the icon size for flexibility */
 .app-logo--wordmark .app-logo__wordmark {
-	font-size: calc(v-bind(size) * 0.65px);
+	font-size: calc(v-bind(size) * 0.8px);
 }
 </style>
