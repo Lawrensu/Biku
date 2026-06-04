@@ -9,8 +9,16 @@ const loading = ref(false)
 const error   = ref('')
 const spinning = ref(false)
 
-const budgetOptions   = ['', 'free', 'low', 'medium', 'high']
-const categoryOptions = ['', 'outdoor', 'indoor', 'food', 'adventure', 'cultural', 'relaxed']
+// Budget maps to backend integers 1-3 (free / moderate / splurge)
+const budgetOptions = [
+	{ label: 'any',      value: ''  },
+	{ label: 'free',     value: 1   },
+	{ label: 'moderate', value: 2   },
+	{ label: 'splurge',  value: 3   },
+]
+
+// Must match backend VALID_CATEGORIES enum exactly
+const categoryOptions = ['', 'outdoor', 'indoor', 'food', 'adventure', 'cosy']
 
 async function spin() {
 	loading.value  = true
@@ -21,12 +29,15 @@ async function spin() {
 	// Spin animation runs for at least 900ms for visual effect
 	const minDelay = new Promise((r) => setTimeout(r, 900))
 
+	// max_duration is labeled in hours in the UI but the backend expects minutes
+	const durationMinutes = filters.max_duration ? Number(filters.max_duration) * 60 : undefined
+
 	try {
 		const [data] = await Promise.all([
 			getIdea({
-				budget:       filters.budget       || undefined,
-				category:     filters.category     || undefined,
-				max_duration: filters.max_duration || undefined,
+				budget:       filters.budget   || undefined,
+				category:     filters.category || undefined,
+				max_duration: durationMinutes,
 			}),
 			minDelay,
 		])
@@ -50,7 +61,7 @@ async function spin() {
 			<div class="randomiser-filters__row">
 				<label class="randomiser-filter__label" for="rand-budget">budget</label>
 				<select id="rand-budget" v-model="filters.budget" class="randomiser-filter__select">
-					<option v-for="o in budgetOptions" :key="o" :value="o">{{ o || 'any' }}</option>
+					<option v-for="o in budgetOptions" :key="o.value" :value="o.value">{{ o.label }}</option>
 				</select>
 			</div>
 			<div class="randomiser-filters__row">
@@ -58,6 +69,7 @@ async function spin() {
 				<select id="rand-category" v-model="filters.category" class="randomiser-filter__select">
 					<option v-for="o in categoryOptions" :key="o" :value="o">{{ o || 'any' }}</option>
 				</select>
+
 			</div>
 			<div class="randomiser-filters__row">
 				<label class="randomiser-filter__label" for="rand-duration">max hours</label>
@@ -120,6 +132,7 @@ async function spin() {
 
 @media (min-width: 768px)  { .randomiser-page { margin-left: 64px;  padding-top: var(--space-8); } }
 @media (min-width: 1024px) { .randomiser-page { margin-left: 200px; } }
+@media (min-width: 1280px) { .randomiser-page { margin-left: 240px; max-width: 700px; } }
 
 .randomiser-page__title {
 	margin:      0 0 var(--space-1);

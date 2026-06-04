@@ -1,38 +1,40 @@
 <script setup>
-import { ref, reactive }   from 'vue'
-import { useRouter, useRoute } from 'vue-router'
-import { useAuthStore }     from '../stores/auth.store.js'
-import BaseInput            from '../components/base/BaseInput.vue'
-import BaseButton           from '../components/base/BaseButton.vue'
+import { ref, reactive }           from 'vue'
+import { useRouter, useRoute }     from 'vue-router'
+import { useAuthStore }            from '../stores/auth.store.js'
+import BaseInput                   from '../components/base/BaseInput.vue'
+import BaseButton                  from '../components/base/BaseButton.vue'
+import { emailRules, required }    from '../utils/validators.js'
 
 const router = useRouter()
 const route  = useRoute()
 const auth   = useAuthStore()
 
-const form    = reactive({ email: '', password: '' })
-const errors  = reactive({ email: '', password: '', general: '' })
-const loading = ref(false)
+const form         = reactive({ email: '', password: '' })
+const generalError = ref('')
+const loading      = ref(false)
 
-function validate() {
-	errors.email   = ''
-	errors.password = ''
-	errors.general  = ''
-	let ok = true
-	if (!form.email.includes('@'))  { errors.email    = 'enter a valid email'; ok = false }
-	if (!form.password)             { errors.password = 'password is required'; ok = false }
-	return ok
-}
+const emailRef = ref(null)
+const passRef  = ref(null)
+
+const passwordRules = [required("don't forget your password")]
 
 async function submit() {
-	if (!validate()) return
+	generalError.value = ''
+
+	const results = [
+		emailRef.value?.validate(),
+		passRef.value?.validate(),
+	]
+	if (results.some((r) => r === false)) return
+
 	loading.value = true
 	try {
 		await auth.login(form.email, form.password)
-		// Redirect to the page the user was trying to reach, or dashboard
 		const redirect = route.query.redirect || '/dashboard'
 		router.push(String(redirect))
 	} catch (e) {
-		errors.general = e.message || 'incorrect email or password'
+		generalError.value = e.message || 'incorrect email or password — give it another try'
 	} finally {
 		loading.value = false
 	}
@@ -48,22 +50,26 @@ async function submit() {
 			<form class="auth-form" @submit.prevent="submit">
 				<BaseInput
 					id="login-email"
+					ref="emailRef"
 					v-model="form.email"
 					label="email"
 					type="email"
 					placeholder="you@example.com"
-					:error="errors.email"
+					:rules="emailRules"
+					sanitize="email"
 				/>
 				<BaseInput
 					id="login-password"
+					ref="passRef"
 					v-model="form.password"
 					label="password"
 					type="password"
 					placeholder="your password"
-					:error="errors.password"
+					:rules="passwordRules"
+					sanitize="no-spaces"
 				/>
 
-				<p v-if="errors.general" class="auth-form__error">{{ errors.general }}</p>
+				<p v-if="generalError" class="auth-form__error">{{ generalError }}</p>
 
 				<BaseButton type="submit" variant="primary" :loading="loading">
 					sign in

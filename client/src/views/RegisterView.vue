@@ -1,50 +1,48 @@
 <script setup>
-import { ref, reactive }   from 'vue'
-import { useRouter }        from 'vue-router'
-import { useAuthStore }     from '../stores/auth.store.js'
-import BaseInput            from '../components/base/BaseInput.vue'
-import BaseButton           from '../components/base/BaseButton.vue'
+import { ref, reactive, computed } from 'vue'
+import { useRouter }               from 'vue-router'
+import { useAuthStore }            from '../stores/auth.store.js'
+import BaseInput                   from '../components/base/BaseInput.vue'
+import BaseButton                  from '../components/base/BaseButton.vue'
+import { nameRules, emailRules, passwordRules, matches, required } from '../utils/validators.js'
 
 const router = useRouter()
 const auth   = useAuthStore()
 
 const form = reactive({ displayName: '', email: '', password: '', confirmPassword: '' })
-const errors  = reactive({ displayName: '', email: '', password: '', confirmPassword: '', general: '' })
-const loading = ref(false)
+const generalError = ref('')
+const loading      = ref(false)
 
-function validate() {
-	errors.displayName    = ''
-	errors.email          = ''
-	errors.password       = ''
-	errors.confirmPassword = ''
-	errors.general        = ''
+// Template refs — used to trigger validation on all fields at submit time
+const nameRef    = ref(null)
+const emailRef   = ref(null)
+const passRef    = ref(null)
+const confirmRef = ref(null)
 
-	let ok = true
-
-	if (!form.displayName.trim()) {
-		errors.displayName = 'name is required'; ok = false
-	}
-	if (!form.email.includes('@')) {
-		errors.email = 'enter a valid email'; ok = false
-	}
-	if (form.password.length < 8) {
-		errors.password = 'password must be at least 8 characters'; ok = false
-	}
-	if (form.password !== form.confirmPassword) {
-		errors.confirmPassword = 'passwords do not match'; ok = false
-	}
-
-	return ok
-}
+// confirmPassword rules depend on form.password reactively
+const confirmRules = computed(() => [
+	required('confirm your password before continuing'),
+	matches(() => form.password),
+])
 
 async function submit() {
-	if (!validate()) return
+	generalError.value = ''
+
+	// Trigger validation on every field so errors appear even if user skipped them
+	const results = [
+		nameRef.value?.validate(),
+		emailRef.value?.validate(),
+		passRef.value?.validate(),
+		confirmRef.value?.validate(),
+	]
+	if (results.some((r) => r === false)) return
+
 	loading.value = true
 	try {
 		await auth.register(form.email, form.password, form.displayName)
 		router.push('/pair')
 	} catch (e) {
-		errors.general = e.message || 'registration failed'
+		generalError.value = e.message || 'registration failed — please try again'
 	} finally {
 		loading.value = false
 	}
@@ -60,37 +58,44 @@ async function submit() {
 			<form class="auth-form" @submit.prevent="submit">
 				<BaseInput
 					id="reg-name"
+					ref="nameRef"
 					v-model="form.displayName"
 					label="your name"
 					placeholder="what should we call you?"
-					:error="errors.displayName"
+					:rules="nameRules"
 				/>
 				<BaseInput
 					id="reg-email"
+					ref="emailRef"
 					v-model="form.email"
 					label="email"
 					type="email"
 					placeholder="you@example.com"
-					:error="errors.email"
+					:rules="emailRules"
+					sanitize="email"
 				/>
 				<BaseInput
 					id="reg-password"
+					ref="passRef"
 					v-model="form.password"
 					label="password"
 					type="password"
 					placeholder="at least 8 characters"
-					:error="errors.password"
+					:rules="passwordRules"
+					sanitize="no-spaces"
 				/>
 				<BaseInput
 					id="reg-confirm"
+					ref="confirmRef"
 					v-model="form.confirmPassword"
 					label="confirm password"
 					type="password"
 					placeholder="same as above"
-					:error="errors.confirmPassword"
+					:rules="confirmRules"
+					sanitize="no-spaces"
 				/>
 
-				<p v-if="errors.general" class="auth-form__error">{{ errors.general }}</p>
+				<p v-if="generalError" class="auth-form__error">{{ generalError }}</p>
 
 				<BaseButton type="submit" variant="primary" :loading="loading">
 					create account

@@ -1,10 +1,11 @@
 <script setup>
-import { ref }           from 'vue'
-import { useRouter }     from 'vue-router'
-import { useAuthStore }  from '../stores/auth.store.js'
-import { useCoupleStore } from '../stores/couple.store.js'
-import BaseInput         from '../components/base/BaseInput.vue'
-import BaseButton        from '../components/base/BaseButton.vue'
+import { ref }              from 'vue'
+import { useRouter }        from 'vue-router'
+import { useAuthStore }     from '../stores/auth.store.js'
+import { useCoupleStore }   from '../stores/couple.store.js'
+import BaseInput            from '../components/base/BaseInput.vue'
+import BaseButton           from '../components/base/BaseButton.vue'
+import { inviteCodeRules }  from '../utils/validators.js'
 
 const router = useRouter()
 const auth   = useAuthStore()
@@ -34,9 +35,10 @@ async function generateCode() {
 const joinCode    = ref('')
 const joinLoading = ref(false)
 const joinError   = ref('')
+const joinCodeRef = ref(null)
 
 async function joinWithCode() {
-	if (!joinCode.value.trim()) { joinError.value = 'enter the code from your partner'; return }
+	if (joinCodeRef.value?.validate() === false) return
 	joinLoading.value = true
 	joinError.value   = ''
 	try {
@@ -75,7 +77,7 @@ async function joinWithCode() {
 
 				<div v-else class="pair-card__code-display">
 					<p class="pair-card__code">{{ generatedCode }}</p>
-					<p class="pair-card__code-hint">share this code with your partner — it expires once used</p>
+					<p class="pair-card__code-hint">share this code with your partner, it expires once used</p>
 					<p class="pair-card__code-hint">
 						waiting for them to join… once they enter this code you'll both land on the dashboard.
 					</p>
@@ -93,11 +95,13 @@ async function joinWithCode() {
 				<form class="pair-card__form" @submit.prevent="joinWithCode">
 					<BaseInput
 						id="join-code"
+						ref="joinCodeRef"
 						v-model="joinCode"
 						label="invite code"
 						placeholder="XXXXXX"
-						helper="6 characters, uppercase"
+						:rules="inviteCodeRules"
 						:error="joinError"
+						sanitize="uppercase"
 					/>
 					<BaseButton type="submit" variant="primary" :loading="joinLoading">
 						join

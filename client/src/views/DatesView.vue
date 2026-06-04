@@ -145,6 +145,7 @@ function countdownText(dateStr, recurse) {
 
 @media (min-width: 768px)  { .dates-page { margin-left: 64px;  padding-top: var(--space-8); } }
 @media (min-width: 1024px) { .dates-page { margin-left: 200px; } }
+@media (min-width: 1280px) { .dates-page { margin-left: 240px; max-width: 760px; } }
 
 .dates-page__header {
 	display:         flex;

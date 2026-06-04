@@ -92,6 +92,7 @@ function onLogged() { reload() }
 
 @media (min-width: 768px)  { .mood-page { margin-left: 64px;  padding-top: var(--space-8); } }
 @media (min-width: 1024px) { .mood-page { margin-left: 200px; } }
+@media (min-width: 1280px) { .mood-page { margin-left: 240px; max-width: 900px; } }
 
 .mood-page__title {
 	margin:      0 0 var(--space-6);

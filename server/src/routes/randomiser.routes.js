@@ -110,8 +110,12 @@ Respond with a single JSON object only — no markdown, no explanation, no code 
 					contents: [{ parts: [{ text: prompt }] }],
 					generationConfig: {
 						temperature:     0.9,
-						maxOutputTokens: 256,
+						maxOutputTokens: 512,
 					},
+					// Disable chain-of-thought thinking — gemini-2.5-flash enables it by
+					// default which prepends reasoning tokens before the JSON response,
+					// breaking JSON.parse. We don't need thinking for this simple task.
+					thinkingConfig: { thinkingBudget: 0 },
 				}),
 			},
 		);

@@ -124,6 +124,7 @@ const partnerName = computed(() =>
 
 @media (min-width: 768px)  { .settings-page { margin-left: 64px;  padding-top: var(--space-8); } }
 @media (min-width: 1024px) { .settings-page { margin-left: 200px; } }
+@media (min-width: 1280px) { .settings-page { margin-left: 240px; max-width: 700px; } }
 
 .settings-page__title {
 	margin:      0 0 var(--space-6);

@@ -38,7 +38,8 @@
 :root {
 	/* Surfaces */
 	--surface-base:     #FDFAF8; /* page background — warm off-white, never pure white */
-	--surface-card:     #FFFFFF; /* cards, panels — slight lift over base */
+	--surface-raised:   #F4EDE7; /* inputs, chips, sidebar hover — subtle lift above base */
+	--surface-card:     #FFFFFF; /* cards, panels — clear lift over base */
 	--surface-elevated: #F5EDE0; /* modals, dropdowns */
 
 	/* Text */
@@ -82,6 +83,7 @@
 [data-theme='dark'] {
 	/* Surfaces — warm-dark stack, three levels of elevation */
 	--surface-base:     #1A1612; /* warm black */
+	--surface-raised:   #211D17; /* inputs, chips, sidebar hover — subtle lift above base */
 	--surface-card:     #242019; /* cards, panels */
 	--surface-elevated: #2E2920; /* modals, dropdowns */
 

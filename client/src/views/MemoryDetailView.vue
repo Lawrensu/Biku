@@ -139,8 +139,9 @@ async function confirmDelete() {
 	padding-bottom: calc(var(--space-16) + env(safe-area-inset-bottom));
 }
 
-@media (min-width: 768px)  { .memory-detail { margin-left: calc(64px + var(--space-4)); } }
+@media (min-width: 768px)  { .memory-detail { margin-left: calc(64px + var(--space-4));  } }
 @media (min-width: 1024px) { .memory-detail { margin-left: calc(200px + var(--space-4)); } }
+@media (min-width: 1280px) { .memory-detail { margin-left: calc(240px + var(--space-4)); max-width: 960px; } }
 
 .memory-detail__loading,
 .memory-detail__error {

@@ -106,6 +106,7 @@ function onDeleted(id) {
 
 @media (min-width: 768px)  { .lists-page { margin-left: 64px;  padding-top: var(--space-8); } }
 @media (min-width: 1024px) { .lists-page { margin-left: 200px; } }
+@media (min-width: 1280px) { .lists-page { margin-left: 240px; max-width: 760px; } }
 
 .lists-page__title {
 	margin:      0 0 var(--space-5);

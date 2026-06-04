@@ -144,12 +144,9 @@ onMounted(async () => {
 }
 
 /* Sidebar offset on tablet+ */
-@media (min-width: 768px) {
-	.dashboard { margin-left: 64px; padding-top: var(--space-8); }
-}
-@media (min-width: 1024px) {
-	.dashboard { margin-left: 200px; }
-}
+@media (min-width: 768px)  { .dashboard { margin-left: 64px;  padding-top: var(--space-8); } }
+@media (min-width: 1024px) { .dashboard { margin-left: 200px; } }
+@media (min-width: 1280px) { .dashboard { margin-left: 240px; max-width: 1100px; } }
 
 .dashboard__header {
 	margin-bottom: var(--space-8);

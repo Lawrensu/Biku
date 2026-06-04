@@ -147,6 +147,7 @@ async function submit() {
 
 @media (min-width: 768px)  { .memory-form-page { margin-left: 64px;  padding-top: var(--space-8); } }
 @media (min-width: 1024px) { .memory-form-page { margin-left: 200px; } }
+@media (min-width: 1280px) { .memory-form-page { margin-left: 240px; max-width: 760px; } }
 
 .memory-form-page__header {
 	margin-bottom: var(--space-6);

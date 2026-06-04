@@ -58,6 +58,7 @@ onMounted(fetchMemories)
 
 @media (min-width: 768px)  { .memories-page { margin-left: 64px;  padding-top: var(--space-8); } }
 @media (min-width: 1024px) { .memories-page { margin-left: 200px; } }
+@media (min-width: 1280px) { .memories-page { margin-left: 240px; max-width: 1200px; } }
 
 .memories-page__header {
 	display:         flex;

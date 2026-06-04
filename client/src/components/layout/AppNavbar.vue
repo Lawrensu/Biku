@@ -202,6 +202,13 @@ const initials = computed(() => {
 	}
 }
 
+/* Wider sidebar on large screens */
+@media (min-width: 1280px) {
+	.nav-sidebar {
+		width: 240px;
+	}
+}
+
 .nav-sidebar__logo {
 	display:         flex;
 	align-items:     center;
