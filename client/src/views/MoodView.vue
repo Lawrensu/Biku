@@ -26,14 +26,16 @@ async function reload() {
 	loading.value = true
 	try {
 		const data = await getMoods(30)
-		const all  = data?.moods ?? []
+		// Backend returns { logs } — Drizzle ORM produces camelCase field names
+		// (moodScore, logDate, userId, etc.) not snake_case.
+		const all  = data?.logs ?? []
 
-		userMoods.value    = all.filter((m) => m.userId    === auth.user?.id  || m.user_id === auth.user?.id)
-		partnerMoods.value = all.filter((m) => m.userId !== auth.user?.id && m.user_id !== auth.user?.id)
+		userMoods.value    = all.filter((m) => m.userId === auth.user?.id)
+		partnerMoods.value = all.filter((m) => m.userId !== auth.user?.id)
 
 		// Check if the user already logged today
 		const today = new Date().toISOString().slice(0, 10)
-		todayEntry.value = userMoods.value.find((m) => (m.date || m.createdAt || '').slice(0, 10) === today) ?? null
+		todayEntry.value = userMoods.value.find((m) => (m.logDate || '').slice(0, 10) === today) ?? null
 	} catch { /* silently skip */ }
 	loading.value = false
 }
@@ -72,9 +74,9 @@ function onLogged() { reload() }
 			<h2 class="mood-page__section-title">recent entries</h2>
 			<ul class="mood-page__entries">
 				<li v-for="entry in userMoods.slice(0, 10)" :key="entry.id" class="card mood-page__entry">
-					<span class="mood-page__entry-score">{{ entry.mood_score ?? entry.score }} / 5</span>
+					<span class="mood-page__entry-score">{{ entry.moodScore }} / 5</span>
 					<span class="mood-page__entry-date">
-						{{ new Date(entry.date || entry.createdAt).toLocaleDateString(undefined, { month: 'short', day: 'numeric' }) }}
+						{{ new Date(entry.logDate).toLocaleDateString(undefined, { month: 'short', day: 'numeric' }) }}
 					</span>
 					<span v-if="entry.note" class="mood-page__entry-note">{{ entry.note }}</span>
 				</li>

@@ -34,10 +34,10 @@ onMounted(async () => {
 		const data = await getMemory(route.params.id)
 		memory.value = data?.memory ?? null
 
-		// Fetch weather if coordinates exist
-		if (memory.value?.lat && memory.value?.lng && memory.value?.date) {
+		// Fetch weather if coordinates exist — Drizzle returns memoryDate (camelCase)
+		if (memory.value?.lat && memory.value?.lng && memory.value?.memoryDate) {
 			try {
-				const w = await getWeather(memory.value.lat, memory.value.lng, memory.value.date)
+				const w = await getWeather(memory.value.lat, memory.value.lng, memory.value.memoryDate)
 				weather.value = w?.weather ?? null
 			} catch { /* weather is optional — no crash */ }
 		}
@@ -100,10 +100,10 @@ async function confirmDelete() {
 				<h1 class="memory-detail__title">{{ memory.title }}</h1>
 
 				<div class="memory-detail__meta">
-					<span v-if="memory.date">
-						{{ new Date(memory.date).toLocaleDateString(undefined, { year: 'numeric', month: 'long', day: 'numeric' }) }}
+					<span v-if="memory.memoryDate">
+						{{ new Date(memory.memoryDate).toLocaleDateString(undefined, { year: 'numeric', month: 'long', day: 'numeric' }) }}
 					</span>
-					<span v-if="memory.location" class="memory-detail__location">· {{ memory.location }}</span>
+					<span v-if="memory.locationName" class="memory-detail__location">· {{ memory.locationName }}</span>
 				</div>
 
 				<!-- Weather widget (only if coords + weather fetched) -->
@@ -112,7 +112,7 @@ async function confirmDelete() {
 					<span class="memory-detail__weather-data">{{ weatherLabel }}</span>
 				</div>
 
-				<p v-if="memory.note" class="memory-detail__note">{{ memory.note }}</p>
+				<p v-if="memory.description" class="memory-detail__note">{{ memory.description }}</p>
 
 				<div class="memory-detail__actions">
 					<BaseButton variant="danger" @click="deleteModal = true">delete memory</BaseButton>

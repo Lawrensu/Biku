@@ -5,6 +5,13 @@ import { onMounted, onUnmounted, ref } from 'vue'
 import { useRouter }                   from 'vue-router'
 import { getMapMemories }              from '../../services/memory.service.js'
 
+// Static PNG imports processed by Vite at build time — they get hashed asset URLs.
+// This is the correct Vite pattern; `new URL('leaflet/...', import.meta.url)` does
+// NOT resolve node_modules paths when the module is dynamically imported.
+import markerIcon    from 'leaflet/dist/images/marker-icon.png'
+import markerIcon2x  from 'leaflet/dist/images/marker-icon-2x.png'
+import markerShadow  from 'leaflet/dist/images/marker-shadow.png'
+
 const mapEl   = ref(null)
 const router  = useRouter()
 let   map     = null
@@ -16,12 +23,12 @@ onMounted(async () => {
 	L = (await import('leaflet')).default
 	await import('leaflet/dist/leaflet.css')
 
-	// Fix Leaflet's default icon paths when bundled through Vite
+	// Fix Leaflet's default icon paths — use the Vite-processed static imports above
 	delete L.Icon.Default.prototype._getIconUrl
 	L.Icon.Default.mergeOptions({
-		iconUrl:      new URL('leaflet/dist/images/marker-icon.png',    import.meta.url).href,
-		iconRetinaUrl: new URL('leaflet/dist/images/marker-icon-2x.png', import.meta.url).href,
-		shadowUrl:    new URL('leaflet/dist/images/marker-shadow.png',  import.meta.url).href,
+		iconUrl:       markerIcon,
+		iconRetinaUrl: markerIcon2x,
+		shadowUrl:     markerShadow,
 	})
 
 	map = L.map(mapEl.value).setView([0, 0], 2)

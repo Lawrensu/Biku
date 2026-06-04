@@ -165,7 +165,7 @@ onMounted(async () => {
 }
 
 .dashboard__header {
-	margin-bottom: var(--space-8);
+	margin-bottom: var(--space-10);
 }
 
 .dashboard__greeting {
@@ -220,7 +220,7 @@ onMounted(async () => {
 }
 
 .dashboard__section-title {
-	margin:      0;
+	margin:      0 0 var(--space-3); /* breathing room before the card below */
 	font-family: var(--font-heading);
 	font-size:   var(--text-lg);
 	font-weight: 700;

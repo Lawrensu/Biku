@@ -20,7 +20,7 @@ const ui     = useUiStore()
 			<Moon v-else                      :size="18" />
 		</button>
 
-		<!-- Breathing ASCII art — sits behind the foreground content -->
+		<!-- Breathing ASCII art — full-canvas backdrop, sits behind foreground -->
 		<pre class="landing__art" aria-hidden="true">
   ____  ___ _  ___  _
  | __ )| | | |/ / || |
@@ -38,7 +38,7 @@ const ui     = useUiStore()
            together
 		</pre>
 
-		<!-- Foreground content -->
+		<!-- Foreground content — centred vertically and horizontally -->
 		<div class="landing__content">
 			<h1 class="landing__wordmark">biku</h1>
 			<p class="landing__tagline">your little world, just the two of you</p>
@@ -70,14 +70,14 @@ const ui     = useUiStore()
 
 .landing__theme-btn {
 	position:      fixed;
-	top:           var(--space-4);
-	right:         var(--space-4);
+	top:           var(--space-5);
+	right:         var(--space-5);
 	z-index:       10;
 	display:       flex;
 	align-items:   center;
 	justify-content: center;
-	width:         40px;
-	height:        40px;
+	width:         44px;
+	height:        44px;
 	border-radius: var(--radius-full);
 	border:        1px solid var(--border-default);
 	background:    var(--surface-card);
@@ -92,7 +92,6 @@ const ui     = useUiStore()
 .landing__theme-btn:hover {
 	color:        var(--text-primary);
 	background:   var(--surface-raised);
-	border-color: var(--border-default);
 }
 
 /* -- Breathing ASCII art --------------------------------------------------- */
@@ -106,13 +105,16 @@ const ui     = useUiStore()
 	align-items: center;
 	justify-content: center;
 	font-family: 'Courier New', monospace;
-	font-size:   clamp(8px, 1.4vw, 16px);
-	line-height: 1.5;
+	/*
+		Large enough that the ASCII art fills the viewport as a dramatic backdrop.
+		clamp: 12px on very small screens, scales to ~2.6vw, caps at 32px.
+	*/
+	font-size:   clamp(12px, 2.6vw, 32px);
+	line-height: 1.45;
 	color:       var(--color-carbon);
-	opacity:     0.14;
+	opacity:     0.15;
 	white-space: pre;
 	z-index:     0;
-	/* Breathing animation */
 	animation: breathing 4s ease-in-out infinite;
 	transform-origin: center;
 	pointer-events: none;
@@ -121,7 +123,7 @@ const ui     = useUiStore()
 
 @keyframes breathing {
 	0%, 100% { opacity: 0.12; transform: scale(1.0);   }
-	50%       { opacity: 0.22; transform: scale(1.015); }
+	50%       { opacity: 0.24; transform: scale(1.02); }
 }
 
 [data-theme='dark'] .landing__art {
@@ -136,41 +138,47 @@ const ui     = useUiStore()
 	display:         flex;
 	flex-direction:  column;
 	align-items:     center;
-	gap:             var(--space-5);
+	gap:             var(--space-6);
 	text-align:      center;
-	padding:         var(--space-8) var(--space-4);
+	padding:         var(--space-12) var(--space-6);
 }
 
+/*
+	The wordmark is the single most dominant element on the page.
+	At 1440px it renders at ~140px — large enough to feel like a brand moment.
+*/
 .landing__wordmark {
-	font-family:   var(--font-heading);
-	font-size:     clamp(3rem, 12vw, 7rem);
-	font-weight:   800;
-	letter-spacing: -0.03em;
-	color:         var(--text-primary);
-	margin:        0;
-	line-height:   1;
+	font-family:    var(--font-heading);
+	font-size:      clamp(4.5rem, 16vw, 10rem);
+	font-weight:    800;
+	letter-spacing: -0.04em;
+	color:          var(--text-primary);
+	margin:         0;
+	line-height:    1;
 }
 
 .landing__tagline {
 	font-family:  var(--font-body);
 	font-style:   italic;
-	font-size:    clamp(var(--text-base), 3vw, var(--text-xl));
+	font-size:    clamp(var(--text-lg), 3.5vw, var(--text-2xl));
 	color:        var(--text-secondary);
 	margin:       0;
+	max-width:    36ch;
 }
 
 .landing__ctas {
-	display: flex;
-	gap:     var(--space-3);
-	flex-wrap: wrap;
+	display:         flex;
+	gap:             var(--space-4);
+	flex-wrap:       wrap;
 	justify-content: center;
+	margin-top:      var(--space-2);
 }
 
-/* Reuse global .btn classes from main.css — scoped overrides for sizing */
 .landing__cta {
-	min-width:  140px;
-	font-size:  var(--text-base);
-	padding:    var(--space-3) var(--space-6);
+	min-width:   160px;
+	font-size:   var(--text-base);
+	padding:     var(--space-4) var(--space-8);
+	font-size:   var(--text-base);
 }
 
 /* -- Reduced-motion: disable breathing ------------------------------------- */

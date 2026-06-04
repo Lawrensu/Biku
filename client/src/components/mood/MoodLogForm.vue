@@ -10,8 +10,8 @@ const props = defineProps({
 
 const emit = defineEmits(['logged'])
 
-// Pre-fill if editing
-const score    = ref(props.existingEntry?.mood_score ?? props.existingEntry?.score ?? null)
+// Pre-fill if editing — backend returns camelCase (moodScore) from Drizzle ORM
+const score    = ref(props.existingEntry?.moodScore ?? props.existingEntry?.mood_score ?? null)
 const note     = ref(props.existingEntry?.note ?? '')
 const loading  = ref(false)
 const error    = ref('')

@@ -68,14 +68,15 @@ async function submit() {
 	submitError.value  = ''
 	submitLoading.value = true
 	try {
+		// Backend schema: memory_date (required), description, location_name — NOT date/note/location
 		const payload = {
-			title:    form.title.trim(),
-			note:     form.note.trim() || undefined,
-			date:     form.date,
-			location: form.location.trim() || undefined,
-			image_url: form.imageUrl || undefined,
-			lat:      form.lat ?? undefined,
-			lng:      form.lng ?? undefined,
+			title:         form.title.trim(),
+			description:   form.note.trim() || undefined,
+			memory_date:   form.date,
+			location_name: form.location.trim() || undefined,
+			image_url:     form.imageUrl || undefined,
+			lat:           form.lat ?? undefined,
+			lng:           form.lng ?? undefined,
 		}
 		const data = await createMemory(payload)
 		router.push(`/memories/${data.memory.id}`)

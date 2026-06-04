@@ -8,10 +8,11 @@ const props = defineProps({
 
 const router = useRouter()
 
-// Format stored date string (YYYY-MM-DD or timestamp) into a readable label
+// Format stored date string — Drizzle returns memoryDate (camelCase)
 const formattedDate = computed(() => {
-	if (!props.memory.date) return ''
-	return new Date(props.memory.date).toLocaleDateString(undefined, {
+	const d = props.memory.memoryDate || props.memory.date
+	if (!d) return ''
+	return new Date(d).toLocaleDateString(undefined, {
 		year: 'numeric', month: 'short', day: 'numeric',
 	})
 })
@@ -42,7 +43,7 @@ function navigate() {
 
 			<div class="memory-card__meta">
 				<span v-if="formattedDate" class="memory-card__date">{{ formattedDate }}</span>
-				<span v-if="memory.location" class="memory-card__location">{{ memory.location }}</span>
+				<span v-if="memory.locationName || memory.location" class="memory-card__location">{{ memory.locationName || memory.location }}</span>
 			</div>
 		</div>
 	</article>
