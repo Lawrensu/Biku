@@ -468,16 +468,21 @@ select {
 	align-items:    center;
 	justify-content: center;
 	font-size:      clamp(160px, 28vw, 380px);
-	font-family:    var(--font-body);
-	font-style:     italic;
+	/*
+		Symbol-aware font stack: geometric/mathematical Unicode characters
+		(∿, ≡, ◇, ∞, ◎, ⊕) must be rendered by a system symbol font, not
+		Lora's serif interpretation, to display at their intended weight and shape.
+	*/
+	font-family:    "Segoe UI Symbol", "Apple Symbols", "Noto Sans Symbols", serif;
+	font-style:     normal;
 	color:          var(--text-primary);
-	opacity:        0.04;
+	opacity:        0.045;
 	pointer-events: none;
 	user-select:    none;
 	z-index:        0;
 	overflow:       hidden;
 	line-height:    1;
-	/* Watermark shifts left on tablet+ to avoid overlapping the sidebar */
+	/* Watermark shifts right on tablet+ to avoid overlapping the sidebar */
 	padding-left:   var(--sidebar-w);
 	transition:     padding-left var(--duration-slow) var(--ease-tender);
 }

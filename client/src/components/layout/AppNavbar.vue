@@ -221,8 +221,12 @@ const initials = computed(() => {
 .nav-sidebar__logo--full { display: none;  }
 
 @media (min-width: 1024px) {
-	.nav-sidebar__logo--icon { display: none;  }
-	.nav-sidebar__logo--full { display: block; padding-left: var(--space-4); }
+	.nav-sidebar__logo--icon { display: none;        }
+	/*
+		Must be inline-flex, NOT block — block overrides AppLogo's own
+		display:inline-flex, causing the heart SVG and text to stack vertically.
+	*/
+	.nav-sidebar__logo--full { display: inline-flex; padding-left: var(--space-4); }
 }
 
 .nav-sidebar__list {

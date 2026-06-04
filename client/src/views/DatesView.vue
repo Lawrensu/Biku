@@ -83,7 +83,7 @@ function countdownText(dateStr, recurse) {
 
 <template>
 	<main class="dates-page">
-		<div class="page-watermark" aria-hidden="true">◻</div>
+		<div class="page-watermark" aria-hidden="true">◇</div>
 		<div class="dates-page__header">
 			<h1 class="dates-page__title">important dates</h1>
 			<BaseButton variant="primary" @click="showAdd = true">add date</BaseButton>

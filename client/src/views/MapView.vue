@@ -27,12 +27,9 @@ const MemoryMap = defineAsyncComponent(() => import('../components/memory/Memory
 	z-index:   1;
 }
 
-@media (min-width: 768px) {
-	.map-view { left: 64px; }
-}
-@media (min-width: 1024px) {
-	.map-view { left: 200px; }
-}
+@media (min-width: 768px)  { .map-view { left: 64px;  } }
+@media (min-width: 1024px) { .map-view { left: 200px; } }
+@media (min-width: 1280px) { .map-view { left: 240px; } }
 
 .map-view__loading {
 	display:         flex;

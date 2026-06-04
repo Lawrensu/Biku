@@ -1,10 +1,10 @@
 <script setup>
 import { ref, reactive, watch } from 'vue'
-import { useRouter }         from 'vue-router'
-import { createMemory }      from '../services/memory.service.js'
-import { searchUnsplash }    from '../services/proxy.service.js'
-import BaseInput             from '../components/base/BaseInput.vue'
-import BaseButton            from '../components/base/BaseButton.vue'
+import { useRouter }            from 'vue-router'
+import { createMemory }         from '../services/memory.service.js'
+import { searchUnsplash, geocodePlace } from '../services/proxy.service.js'
+import BaseInput                from '../components/base/BaseInput.vue'
+import BaseButton               from '../components/base/BaseButton.vue'
 
 const router = useRouter()
 
@@ -38,7 +38,40 @@ watch(() => form.title, (title) => {
 	}, 400)
 })
 
-// ── Geolocation ──────────────────────────────────────────────────────────────
+// ── Place search (Nominatim geocoding) ───────────────────────────────────────
+// Debounced 500ms — Nominatim ToS requires ≤1 req/s
+const geoResults      = ref([])
+const geoSearchActive = ref(false)  // true while dropdown is open
+let   geoTimer        = null
+
+watch(() => form.location, (val) => {
+	clearTimeout(geoTimer)
+	geoResults.value = []
+	if (!val || val.trim().length < 3) return
+	geoTimer = setTimeout(async () => {
+		try {
+			const data = await geocodePlace(val.trim())
+			geoResults.value = data?.results ?? []
+		} catch { /* silently skip — location is optional */ }
+	}, 500)
+})
+
+function selectPlace(result) {
+	// Setting location triggers the watcher, so we must clear timer + results
+	// BEFORE assigning to avoid an immediate re-search on the chosen display name.
+	clearTimeout(geoTimer)
+	form.location    = result.name
+	form.lat         = result.lat
+	form.lng         = result.lng
+	geoResults.value = []
+}
+
+function clearPlace() {
+	form.lat = null
+	form.lng = null
+}
+
+// ── GPS fallback ─────────────────────────────────────────────────────────────
 const geoLoading = ref(false)
 const geoError   = ref('')
 
@@ -48,8 +81,8 @@ function getLocation() {
 	geoError.value   = ''
 	navigator.geolocation.getCurrentPosition(
 		(pos) => {
-			form.lat = pos.coords.latitude
-			form.lng = pos.coords.longitude
+			form.lat         = pos.coords.latitude
+			form.lng         = pos.coords.longitude
 			geoLoading.value = false
 		},
 		() => {
@@ -118,13 +151,40 @@ async function submit() {
 			</div>
 
 			<BaseInput id="mem-date"     v-model="form.date"     label="date"     type="date" />
-			<BaseInput id="mem-location" v-model="form.location" label="location" placeholder="where were you?" />
+			<!-- Location search: type a place name → Nominatim dropdown → auto-fills lat/lng -->
+			<div class="mem-location-wrap">
+				<BaseInput
+					id="mem-location"
+					v-model="form.location"
+					label="location"
+					placeholder="search for a place…"
+					:helper="form.lat ? `coordinates captured (${form.lat.toFixed(4)}, ${form.lng.toFixed(4)})` : ''"
+					autocomplete="off"
+					@focus="geoResults = []"
+				/>
+				<!-- Dropdown results from Nominatim -->
+				<ul v-if="geoResults.length" class="mem-geo-results" role="listbox">
+					<li
+						v-for="r in geoResults"
+						:key="`${r.lat},${r.lng}`"
+						class="mem-geo-result"
+						role="option"
+						tabindex="0"
+						@click="selectPlace(r)"
+						@keydown.enter.prevent="selectPlace(r)"
+					>
+						<span class="mem-geo-result__name">{{ r.name }}</span>
+						<span class="mem-geo-result__detail">{{ r.displayName }}</span>
+					</li>
+				</ul>
+			</div>
 
-			<!-- Geolocation capture -->
+			<!-- GPS fallback — still available alongside place search -->
 			<div class="mem-geo">
 				<BaseButton type="button" variant="secondary" :loading="geoLoading" @click="getLocation">
-					{{ form.lat ? '📍 location captured' : 'capture my location' }}
+					{{ form.lat ? 'location pinned ✦' : 'use my GPS location' }}
 				</BaseButton>
+				<button v-if="form.lat" type="button" class="mem-geo__clear" @click="clearPlace">clear</button>
 				<p v-if="geoError" class="mem-geo__error">{{ geoError }}</p>
 			</div>
 
@@ -232,9 +292,76 @@ async function submit() {
 	text-overflow: ellipsis;
 }
 
-/* Geo */
-.mem-geo { display: flex; flex-direction: column; gap: var(--space-1); }
-.mem-geo__error { margin: 0; font-size: var(--text-xs); color: var(--error-text); }
+/* Location search + dropdown */
+.mem-location-wrap {
+	position: relative;
+}
+
+.mem-geo-results {
+	position:      absolute;
+	top:           100%;
+	left:          0;
+	right:         0;
+	z-index:       50;
+	list-style:    none;
+	margin:        var(--space-1) 0 0;
+	padding:       var(--space-1) 0;
+	background:    var(--surface-elevated);
+	border:        1px solid var(--border-default);
+	border-radius: var(--radius-md);
+	box-shadow:    0 8px 24px rgba(27, 28, 32, 0.12);
+	overflow:      hidden;
+}
+
+.mem-geo-result {
+	display:        flex;
+	flex-direction: column;
+	gap:            2px;
+	padding:        var(--space-3) var(--space-4);
+	cursor:         pointer;
+	transition:     background var(--duration-fast) var(--ease-tender);
+}
+.mem-geo-result:hover,
+.mem-geo-result:focus {
+	background:  var(--surface-raised);
+	outline:     none;
+}
+
+.mem-geo-result__name {
+	font-family: var(--font-heading);
+	font-size:   var(--text-sm);
+	font-weight: 600;
+	color:       var(--text-primary);
+}
+
+.mem-geo-result__detail {
+	font-family:   var(--font-body);
+	font-size:     var(--text-xs);
+	color:         var(--text-muted);
+	white-space:   nowrap;
+	overflow:      hidden;
+	text-overflow: ellipsis;
+}
+
+/* Geo GPS row */
+.mem-geo {
+	display:     flex;
+	align-items: center;
+	gap:         var(--space-3);
+	flex-wrap:   wrap;
+}
+.mem-geo__clear {
+	font-family: var(--font-heading);
+	font-size:   var(--text-xs);
+	color:       var(--text-muted);
+	background:  transparent;
+	border:      none;
+	cursor:      pointer;
+	padding:     0;
+	text-decoration: underline;
+}
+.mem-geo__clear:hover { color: var(--error-text); }
+.mem-geo__error { margin: 0; font-size: var(--text-xs); color: var(--error-text); flex-basis: 100%; }
 
 /* Note textarea */
 .mem-note__label {

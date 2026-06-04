@@ -61,7 +61,7 @@ const partnerName = computed(() =>
 
 <template>
 	<main class="settings-page">
-		<div class="page-watermark" aria-hidden="true">◈</div>
+		<div class="page-watermark" aria-hidden="true">◎</div>
 		<h1 class="settings-page__title">settings</h1>
 
 		<!-- Couple settings section -->

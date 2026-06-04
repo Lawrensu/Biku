@@ -55,8 +55,8 @@ defineProps({
 
 .app-logo__wordmark {
 	font-family:    var(--font-heading);
-	font-weight:    var(--weight-semibold);
-	letter-spacing: 0.06em;
+	font-weight:    500;           /* was 600 — softer, less corporate */
+	letter-spacing: 0.01em;        /* was 0.06em — tighter, warmer */
 	color:          var(--text-primary);
 	line-height:    1;
 }

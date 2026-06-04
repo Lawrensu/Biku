@@ -62,7 +62,8 @@ onMounted(async () => {
 	// Today's mood (first entry in the last 1 day)
 	try {
 		const data = await getMoods(1)
-		todayMood.value = (data?.moods ?? [])[0] ?? null
+		// Backend returns { logs } — same fix as MoodView
+		todayMood.value = (data?.logs ?? [])[0] ?? null
 	} catch { /* silently skip */ }
 })
 </script>
@@ -92,7 +93,7 @@ onMounted(async () => {
 				<h2 class="dashboard__section-title">today's mood</h2>
 				<div class="card dashboard__mood">
 					<p v-if="todayMood" class="dashboard__mood-score">
-						{{ todayMood.mood_score }} / 5
+						{{ todayMood.moodScore }} / 5
 						<span v-if="todayMood.note" class="dashboard__mood-note">— {{ todayMood.note }}</span>
 					</p>
 					<p v-else class="dashboard__mood-empty">you haven't logged today yet</p>

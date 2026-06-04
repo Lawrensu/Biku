@@ -53,7 +53,7 @@ async function spin() {
 
 <template>
 	<main class="randomiser-page">
-		<div class="page-watermark" aria-hidden="true">?</div>
+		<div class="page-watermark" aria-hidden="true">∞</div>
 		<h1 class="randomiser-page__title">date night randomiser</h1>
 		<p class="randomiser-page__sub">let us plan your next adventure</p>
 

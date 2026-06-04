@@ -48,7 +48,7 @@ function onDeleted(id) {
 
 <template>
 	<main class="lists-page">
-		<div class="page-watermark" aria-hidden="true">·</div>
+		<div class="page-watermark" aria-hidden="true">≡</div>
 		<h1 class="lists-page__title">our lists</h1>
 
 		<!-- Tab bar -->

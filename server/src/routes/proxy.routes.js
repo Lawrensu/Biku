@@ -16,6 +16,11 @@ const weatherQuerySchema = z.object({
 });
 
 
+const geocodeQuerySchema = z.object({
+	q: z.string().min(2).max(256),
+});
+
+
 export async function proxyRoutes(fastify) {
 	// Unsplash image search — API key never leaves the server
 	fastify.get('/api/proxy/unsplash/search', { preHandler: requiresAuth }, async (request, reply) => {
@@ -48,6 +53,48 @@ export async function proxyRoutes(fastify) {
 		}));
 
 		return reply.send({ images });
+	});
+
+
+	// Nominatim geocoding — converts a place name string into lat/lng coordinates.
+	// OpenStreetMap Nominatim is free, no API key required, consistent with our
+	// Leaflet/OSM map stack. We proxy server-side to (a) set the required
+	// User-Agent header and (b) keep the external call out of the browser.
+	fastify.get('/api/proxy/geocode', { preHandler: requiresAuth }, async (request, reply) => {
+		const parsed = geocodeQuerySchema.safeParse(request.query);
+		if (!parsed.success) {
+			return reply.code(400).send({ error: 'query must be at least 2 characters', code: 'VALIDATION_ERROR' });
+		}
+
+		const url = new URL('https://nominatim.openstreetmap.org/search');
+		url.searchParams.set('q',       parsed.data.q);
+		url.searchParams.set('format',  'json');
+		url.searchParams.set('limit',   '5');
+		url.searchParams.set('addressdetails', '1');
+
+		const res = await fetch(url.toString(), {
+			headers: {
+				// Nominatim ToS requires identifying the application in User-Agent
+				'User-Agent':    'Biku/1.0 (COS30043 Interface Design; lawrensuleo@gmail.com)',
+				'Accept-Language': 'en',
+			},
+		});
+
+		if (!res.ok) {
+			return reply.code(502).send({ error: 'geocoding service unavailable', code: 'UPSTREAM_ERROR' });
+		}
+
+		const data = await res.json();
+
+		// Normalise to a minimal shape — frontend only needs name, displayName, lat, lng
+		const results = data.map((r) => ({
+			name:        r.name || r.display_name.split(',')[0].trim(),
+			displayName: r.display_name,
+			lat:         parseFloat(r.lat),
+			lng:         parseFloat(r.lon),
+		}));
+
+		return reply.send({ results });
 	});
 
 

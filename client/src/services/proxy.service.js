@@ -9,3 +9,7 @@ export const searchUnsplash = (query) =>
 // date: 'YYYY-MM-DD'
 export const getWeather = (lat, lng, date) =>
 	apiFetch(`/api/proxy/weather?lat=${lat}&lng=${lng}&date=${date}`)
+
+// Nominatim place-name geocoding — returns up to 5 results with lat/lng
+export const geocodePlace = (query) =>
+	apiFetch(`/api/proxy/geocode?q=${encodeURIComponent(query)}`)
