@@ -48,6 +48,7 @@ function onDeleted(id) {
 
 <template>
 	<main class="lists-page">
+		<div class="page-watermark" aria-hidden="true">·</div>
 		<h1 class="lists-page__title">our lists</h1>
 
 		<!-- Tab bar -->
@@ -97,16 +98,22 @@ function onDeleted(id) {
 <style scoped>
 .lists-page {
 	padding:        var(--space-6) var(--space-4) calc(var(--space-20) + env(safe-area-inset-bottom));
-	max-width:      640px;
+	position:       relative;
+	z-index:        1;
+	max-width:      760px;
 	margin:         0 auto;
 	display:        flex;
 	flex-direction: column;
 	min-height:     100dvh;
 }
 
-@media (min-width: 768px)  { .lists-page { margin-left: 64px;  padding-top: var(--space-8); } }
-@media (min-width: 1024px) { .lists-page { margin-left: 200px; } }
-@media (min-width: 1280px) { .lists-page { margin-left: 240px; max-width: 760px; } }
+@media (min-width: 768px) {
+	.lists-page {
+		margin-left:  max(var(--sidebar-w), calc((100vw - 760px) / 2));
+		margin-right: auto;
+		padding-top:  var(--space-8);
+	}
+}
 
 .lists-page__title {
 	margin:      0 0 var(--space-5);

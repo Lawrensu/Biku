@@ -106,7 +106,9 @@ const isValid = computed(() =>
 				@input="onInput"
 				@blur="onBlur"
 			/>
-			<span v-if="isValid" class="field__valid-mark" aria-hidden="true">✓</span>
+			<!-- ✦ on valid, ✕ on invalid — only shown once the field has been touched -->
+			<span v-if="isValid"                  class="field__mark field__mark--valid"   aria-hidden="true">✦</span>
+			<span v-else-if="touched && displayError" class="field__mark field__mark--invalid" aria-hidden="true">✕</span>
 		</div>
 
 		<p v-if="displayError"        :id="`${id}-error`"  class="field__message field__message--error">{{ displayError }}</p>
@@ -161,8 +163,9 @@ const isValid = computed(() =>
 	cursor:  not-allowed;
 }
 
-/* Pad right side to make room for the ✓ mark */
-.field--valid .field__input  { padding-right: var(--space-8); }
+/* Pad right side to make room for the mark */
+.field--valid .field__input,
+.field--error .field__input  { padding-right: var(--space-8); }
 
 /* Error state */
 .field--error .field__input {
@@ -181,19 +184,21 @@ const isValid = computed(() =>
 	box-shadow:   0 0 0 3px rgba(91, 110, 125, 0.18);
 }
 
-/* Checkmark badge */
-.field__valid-mark {
+/* State marks — ✦ valid, ✕ invalid */
+.field__mark {
 	position:    absolute;
 	right:       var(--space-3);
 	top:         50%;
 	transform:   translateY(-50%);
-	color:       var(--accent-cool);
 	font-family: var(--font-heading);
 	font-size:   var(--text-sm);
 	font-weight: 700;
 	pointer-events: none;
 	user-select: none;
 }
+
+.field__mark--valid   { color: var(--accent-cool);  }
+.field__mark--invalid { color: var(--error-text);   }
 
 .field__message {
 	font-size:   var(--text-xs);

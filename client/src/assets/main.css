@@ -45,7 +45,7 @@
 	/* Text */
 	--text-primary:   #1B1C20;
 	--text-secondary: #5B6E7D;
-	--text-muted:     #8A9BA6;
+	--text-muted:     #6B7D87; /* darkened from #8A9BA6 — contrast justification: linen bg */
 	--text-on-blush:  #5C0403; /* text sitting on blush surfaces */
 	--text-on-dark:   #FAF1E8; /* text sitting on carbon/slate surfaces */
 
@@ -90,7 +90,7 @@
 	/* Text */
 	--text-primary:   #FAF1E8; /* linen inverted to foreground */
 	--text-secondary: #9E9890;
-	--text-muted:     #6B6560;
+	--text-muted:     #8A847E; /* darkened from #6B6560 — dark-mode contrast on warm surfaces */
 	--text-on-blush:  #5C0403; /* unchanged — blush surfaces exist in both modes */
 	--text-on-dark:   #FAF1E8;
 
@@ -355,7 +355,140 @@ select {
 }
 
 
-/* ── 13. prefers-reduced-motion ──────────────────────────── */
+/* ── 13. Global button utilities (.btn / .btn--*) ─────────── */
+
+/*
+	Defined here (not scoped in BaseButton.vue) so that RouterLink, <a>, and
+	<button> elements across ALL views can use btn classes directly without
+	needing to wrap everything in a BaseButton component.
+	BaseButton.vue uses these same classes on its <button> element.
+*/
+.btn {
+	display:         inline-flex;
+	align-items:     center;
+	justify-content: center;
+	gap:             var(--space-2);
+	min-height:      44px;           /* WCAG 2.1 minimum touch target */
+	padding:         0 var(--space-5);
+	border:          none;
+	border-radius:   var(--radius-md);
+	font-family:     var(--font-heading);
+	font-size:       var(--text-sm);
+	font-weight:     600;
+	cursor:          pointer;
+	text-decoration: none;           /* reset for <a> / RouterLink */
+	transition:
+		background var(--duration-fast) var(--ease-tender),
+		color      var(--duration-fast) var(--ease-tender),
+		opacity    var(--duration-fast) var(--ease-tender),
+		transform  var(--duration-fast) var(--ease-tender);
+	user-select:  none;
+	white-space:  nowrap;
+}
+
+.btn:focus-visible {
+	outline:        2px solid var(--focus-ring);
+	outline-offset: 2px;
+}
+
+.btn:disabled,
+.btn[disabled] {
+	opacity: 0.45;
+	cursor:  not-allowed;
+}
+
+.btn:not(:disabled):not([disabled]):active {
+	transform: scale(0.97);
+}
+
+/* Variants */
+.btn--primary {
+	background: var(--btn-primary-bg);
+	color:      var(--btn-primary-text);
+}
+.btn--primary:not(:disabled):not([disabled]):hover {
+	background: var(--btn-primary-hover-bg); /* was --btn-primary-hover — corrected */
+}
+
+.btn--secondary {
+	background: var(--surface-raised);
+	color:      var(--text-primary);
+	border:     1px solid var(--border-default);
+}
+.btn--secondary:not(:disabled):not([disabled]):hover {
+	background: var(--surface-card);
+}
+
+.btn--ghost {
+	background: transparent;
+	color:      var(--text-secondary);
+}
+.btn--ghost:not(:disabled):not([disabled]):hover {
+	background: var(--surface-raised);
+	color:      var(--text-primary);
+}
+
+.btn--danger {
+	background: var(--error-surface); /* was --error-bg — corrected to defined token */
+	color:      var(--error-text);
+	border:     1px solid var(--error-border);
+}
+.btn--danger:not(:disabled):not([disabled]):hover {
+	background: #F5E8E8;
+}
+[data-theme='dark'] .btn--danger:not(:disabled):not([disabled]):hover {
+	background: var(--error-surface);
+}
+
+
+/* ── 14. Sidebar-width utility (content-centering helper) ── */
+
+/*
+	Used by content views as: margin-left: max(var(--sidebar-w), calc((100vw - max-width) / 2))
+	This centres the page block symmetrically in the non-sidebar zone at wide
+	viewports while falling back to the bare sidebar offset at narrow ones.
+*/
+:root      { --sidebar-w: 0px;  }
+@media (min-width: 768px)  { :root { --sidebar-w: 64px;  } }
+@media (min-width: 1024px) { :root { --sidebar-w: 200px; } }
+@media (min-width: 1280px) { :root { --sidebar-w: 240px; } }
+
+
+/* ── 14. Page watermark (emotional background texture) ────── */
+
+/*
+	Each view places <div class="page-watermark" aria-hidden="true"> as its first
+	child. The mark is position:fixed so it fills the viewport regardless of
+	scroll position, and sits behind content at near-zero opacity.
+*/
+.page-watermark {
+	position:       fixed;
+	inset:          0;
+	display:        flex;
+	align-items:    center;
+	justify-content: center;
+	font-size:      clamp(160px, 28vw, 380px);
+	font-family:    var(--font-body);
+	font-style:     italic;
+	color:          var(--text-primary);
+	opacity:        0.04;
+	pointer-events: none;
+	user-select:    none;
+	z-index:        0;
+	overflow:       hidden;
+	line-height:    1;
+	/* Watermark shifts left on tablet+ to avoid overlapping the sidebar */
+	padding-left:   var(--sidebar-w);
+	transition:     padding-left var(--duration-slow) var(--ease-tender);
+}
+
+/* Suppress in reduced-motion contexts — already handled globally but be explicit */
+@media (prefers-reduced-motion: reduce) {
+	.page-watermark { transition: none; }
+}
+
+
+/* ── 16. prefers-reduced-motion ──────────────────────────── */
 
 @media (prefers-reduced-motion: reduce) {
 	*,

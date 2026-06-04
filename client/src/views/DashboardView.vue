@@ -69,6 +69,8 @@ onMounted(async () => {
 
 <template>
 	<main class="dashboard">
+		<div class="page-watermark" aria-hidden="true">♡</div>
+
 		<!-- Greeting header -->
 		<header class="dashboard__header">
 			<p class="dashboard__greeting">{{ greeting }}</p>
@@ -94,7 +96,9 @@ onMounted(async () => {
 						<span v-if="todayMood.note" class="dashboard__mood-note">— {{ todayMood.note }}</span>
 					</p>
 					<p v-else class="dashboard__mood-empty">you haven't logged today yet</p>
-					<RouterLink to="/mood" class="dashboard__mood-link">{{ todayMood ? 'update' : 'log mood' }}</RouterLink>
+					<RouterLink to="/mood" class="btn btn--secondary dashboard__mood-btn">
+						{{ todayMood ? 'update mood' : 'log mood' }}
+					</RouterLink>
 				</div>
 			</section>
 
@@ -102,7 +106,7 @@ onMounted(async () => {
 			<section class="dashboard__section">
 				<div class="dashboard__section-header">
 					<h2 class="dashboard__section-title">coming up</h2>
-					<RouterLink to="/dates" class="dashboard__section-link">see all</RouterLink>
+					<RouterLink to="/dates" class="btn btn--ghost dashboard__section-btn">see all</RouterLink>
 				</div>
 				<div v-if="loadingDates" class="dashboard__dates-skeleton">
 					<div v-for="n in 3" :key="n" class="dashboard__date-placeholder shimmer" />
@@ -113,14 +117,17 @@ onMounted(async () => {
 						<span class="dashboard__date-date">{{ new Date(d.date).toLocaleDateString(undefined, { month: 'short', day: 'numeric' }) }}</span>
 					</li>
 				</ul>
-				<p v-else class="dashboard__empty">no upcoming dates — <RouterLink to="/dates">add one</RouterLink></p>
+				<div v-else class="dashboard__empty-state">
+					<p class="dashboard__empty">no upcoming dates yet</p>
+					<RouterLink to="/dates" class="btn btn--secondary dashboard__empty-btn">add a date</RouterLink>
+				</div>
 			</section>
 
 			<!-- Latest memories -->
 			<section class="dashboard__section">
 				<div class="dashboard__section-header">
 					<h2 class="dashboard__section-title">our memories</h2>
-					<RouterLink to="/memories" class="dashboard__section-link">see all</RouterLink>
+					<RouterLink to="/memories" class="btn btn--ghost dashboard__section-btn">see all</RouterLink>
 				</div>
 				<div class="dashboard__memories-grid">
 					<template v-if="loadingMemories">
@@ -129,7 +136,10 @@ onMounted(async () => {
 					<template v-else-if="recentMemories.length">
 						<MemoryCard v-for="m in recentMemories" :key="m.id" :memory="m" />
 					</template>
-					<p v-else class="dashboard__empty">no memories yet — <RouterLink to="/memories/new">add your first</RouterLink></p>
+					<div v-else class="dashboard__empty-state">
+						<p class="dashboard__empty">no memories yet</p>
+						<RouterLink to="/memories/new" class="btn btn--primary dashboard__empty-btn">add your first</RouterLink>
+					</div>
 				</div>
 			</section>
 		</template>
@@ -138,15 +148,21 @@ onMounted(async () => {
 
 <style scoped>
 .dashboard {
+	position:   relative; /* stacking context — content above the fixed watermark */
+	z-index:    1;
 	padding:    var(--space-6) var(--space-4) calc(var(--space-16) + env(safe-area-inset-bottom, 0px));
 	max-width:  960px;
 	margin:     0 auto;
 }
 
-/* Sidebar offset on tablet+ */
-@media (min-width: 768px)  { .dashboard { margin-left: 64px;  padding-top: var(--space-8); } }
-@media (min-width: 1024px) { .dashboard { margin-left: 200px; } }
-@media (min-width: 1280px) { .dashboard { margin-left: 240px; max-width: 1100px; } }
+/* Centre within available space — max() ensures we never overlap the sidebar */
+@media (min-width: 768px) {
+	.dashboard {
+		margin-left:  max(var(--sidebar-w), calc((100vw - 960px) / 2));
+		margin-right: auto;
+		padding-top:  var(--space-8);
+	}
+}
 
 .dashboard__header {
 	margin-bottom: var(--space-8);
@@ -211,11 +227,10 @@ onMounted(async () => {
 	color:       var(--text-primary);
 }
 
-.dashboard__section-link {
-	font-family: var(--font-heading);
-	font-size:   var(--text-xs);
-	color:       var(--accent-warm);
-	text-decoration: none;
+/* "see all" ghost button */
+.dashboard__section-btn {
+	font-size: var(--text-xs);
+	padding:   var(--space-1) var(--space-3);
 }
 
 /* Mood widget */
@@ -245,12 +260,11 @@ onMounted(async () => {
 	color:       var(--text-muted);
 	font-size:   var(--text-sm);
 }
-.dashboard__mood-link {
-	font-family: var(--font-heading);
-	font-size:   var(--text-xs);
-	font-weight: 600;
-	color:       var(--accent-warm);
-	text-decoration: none;
+/* Mood action button */
+.dashboard__mood-btn {
+	font-size:  var(--text-xs);
+	padding:    var(--space-2) var(--space-3);
+	flex-shrink: 0;
 }
 
 /* Dates */
@@ -303,11 +317,22 @@ onMounted(async () => {
 	gap:                   var(--space-4);
 }
 
+.dashboard__empty-state {
+	display:        flex;
+	flex-direction: column;
+	align-items:    flex-start;
+	gap:            var(--space-3);
+}
+
 .dashboard__empty {
 	margin:      0;
 	font-family: var(--font-body);
 	font-size:   var(--text-sm);
 	color:       var(--text-muted);
 }
-.dashboard__empty a { color: var(--accent-warm); }
+
+.dashboard__empty-btn {
+	font-size: var(--text-sm);
+	padding:   var(--space-2) var(--space-4);
+}
 </style>

@@ -51,6 +51,7 @@ async function submit() {
 
 <template>
 	<div class="auth-page">
+		<div class="page-watermark" aria-hidden="true">♡</div>
 		<div class="auth-card card">
 			<h1 class="auth-card__heading">create your account</h1>
 			<p class="auth-card__sub">already have one? <RouterLink to="/login">sign in</RouterLink></p>
@@ -116,6 +117,8 @@ async function submit() {
 }
 
 .auth-card {
+	position:  relative; /* above watermark */
+	z-index:   1;
 	width:     100%;
 	max-width: 420px;
 }

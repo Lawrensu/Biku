@@ -12,6 +12,8 @@ onMounted(fetchMemories)
 
 <template>
 	<main class="memories-page">
+		<div class="page-watermark" aria-hidden="true">✦</div>
+		<div class="memories-page__body">
 		<header class="memories-page__header">
 			<h1 class="memories-page__title">our memories</h1>
 			<RouterLink to="/memories/new" class="btn btn--primary">add memory</RouterLink>
@@ -46,19 +48,30 @@ onMounted(fetchMemories)
 				<p v-else class="memories-page__end">that's all of them</p>
 			</div>
 		</template>
+		</div><!-- /.memories-page__body -->
 	</main>
 </template>
 
 <style scoped>
 .memories-page {
+	position:  relative;
+}
+
+.memories-page__body {
+	position:  relative;
+	z-index:   1;
 	padding:   var(--space-6) var(--space-4) calc(var(--space-16) + env(safe-area-inset-bottom));
 	max-width: 1080px;
 	margin:    0 auto;
 }
 
-@media (min-width: 768px)  { .memories-page { margin-left: 64px;  padding-top: var(--space-8); } }
-@media (min-width: 1024px) { .memories-page { margin-left: 200px; } }
-@media (min-width: 1280px) { .memories-page { margin-left: 240px; max-width: 1200px; } }
+@media (min-width: 768px) {
+	.memories-page__body {
+		margin-left:  max(var(--sidebar-w), calc((100vw - 1080px) / 2));
+		margin-right: auto;
+		padding-top:  var(--space-8);
+	}
+}
 
 .memories-page__header {
 	display:         flex;

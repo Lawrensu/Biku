@@ -7,6 +7,23 @@
 		<meta name="description" content="Biku — your private shared space." />
 		<title>Biku</title>
 
+		<!--
+			Blocking theme script — runs synchronously before first paint to prevent
+			a light-mode flash when the user has chosen dark or their OS prefers dark.
+			Must stay inline and before all other scripts.
+		-->
+		<script>
+			(function () {
+				var stored = localStorage.getItem('biku-theme');
+				var theme  = stored
+					? stored
+					: window.matchMedia('(prefers-color-scheme: dark)').matches
+						? 'dark'
+						: 'light';
+				document.documentElement.setAttribute('data-theme', theme);
+			})();
+		</script>
+
 		<link rel="preconnect" href="https://fonts.googleapis.com" />
 		<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
 		<link

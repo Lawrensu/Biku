@@ -61,6 +61,7 @@ const partnerName = computed(() =>
 
 <template>
 	<main class="settings-page">
+		<div class="page-watermark" aria-hidden="true">◈</div>
 		<h1 class="settings-page__title">settings</h1>
 
 		<!-- Couple settings section -->
@@ -118,13 +119,19 @@ const partnerName = computed(() =>
 <style scoped>
 .settings-page {
 	padding:   var(--space-6) var(--space-4) calc(var(--space-16) + env(safe-area-inset-bottom));
-	max-width: 560px;
+	position:  relative;
+	z-index:   1;
+	max-width: 700px;
 	margin:    0 auto;
 }
 
-@media (min-width: 768px)  { .settings-page { margin-left: 64px;  padding-top: var(--space-8); } }
-@media (min-width: 1024px) { .settings-page { margin-left: 200px; } }
-@media (min-width: 1280px) { .settings-page { margin-left: 240px; max-width: 700px; } }
+@media (min-width: 768px) {
+	.settings-page {
+		margin-left:  max(var(--sidebar-w), calc((100vw - 700px) / 2));
+		margin-right: auto;
+		padding-top:  var(--space-8);
+	}
+}
 
 .settings-page__title {
 	margin:      0 0 var(--space-6);

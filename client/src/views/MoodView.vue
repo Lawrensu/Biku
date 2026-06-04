@@ -43,6 +43,7 @@ function onLogged() { reload() }
 
 <template>
 	<main class="mood-page">
+		<div class="page-watermark" aria-hidden="true">~</div>
 		<h1 class="mood-page__title">our mood</h1>
 
 		<section class="mood-page__section">
@@ -86,13 +87,19 @@ function onLogged() { reload() }
 <style scoped>
 .mood-page {
 	padding:   var(--space-6) var(--space-4) calc(var(--space-16) + env(safe-area-inset-bottom));
-	max-width: 720px;
+	position:  relative;
+	z-index:   1;
+	max-width: 900px;
 	margin:    0 auto;
 }
 
-@media (min-width: 768px)  { .mood-page { margin-left: 64px;  padding-top: var(--space-8); } }
-@media (min-width: 1024px) { .mood-page { margin-left: 200px; } }
-@media (min-width: 1280px) { .mood-page { margin-left: 240px; max-width: 900px; } }
+@media (min-width: 768px) {
+	.mood-page {
+		margin-left:  max(var(--sidebar-w), calc((100vw - 900px) / 2));
+		margin-right: auto;
+		padding-top:  var(--space-8);
+	}
+}
 
 .mood-page__title {
 	margin:      0 0 var(--space-6);

@@ -1,10 +1,25 @@
 <script setup>
-import { useRouter } from 'vue-router'
+import { useRouter }    from 'vue-router'
+import { useUiStore }   from '../stores/ui.store.js'
+import { Sun, Moon }    from 'lucide-vue-next'
+
 const router = useRouter()
+const ui     = useUiStore()
 </script>
 
 <template>
 	<div class="landing">
+
+		<!-- Theme toggle — top-right, always accessible from the first screen -->
+		<button
+			class="landing__theme-btn"
+			:aria-label="ui.theme === 'dark' ? 'switch to light mode' : 'switch to dark mode'"
+			@click="ui.toggleTheme()"
+		>
+			<Sun  v-if="ui.theme === 'dark'" :size="18" />
+			<Moon v-else                      :size="18" />
+		</button>
+
 		<!-- Breathing ASCII art — sits behind the foreground content -->
 		<pre class="landing__art" aria-hidden="true">
   ____  ___ _  ___  _
@@ -14,13 +29,13 @@ const router = useRouter()
  |____/|_|/_/|_\  |_|
 
 
-      .  .  .
+          .  .  .
 
-    /|        |\
-   ( o )    ( o )
-    \  \    /  /
-     `--------'
-      together
+        (o)       (o)
+        /|\_______/|\
+       / |         | \
+
+           together
 		</pre>
 
 		<!-- Foreground content -->
@@ -51,6 +66,35 @@ const router = useRouter()
 	overflow:        hidden;
 }
 
+/* -- Theme toggle ----------------------------------------------------------- */
+
+.landing__theme-btn {
+	position:      fixed;
+	top:           var(--space-4);
+	right:         var(--space-4);
+	z-index:       10;
+	display:       flex;
+	align-items:   center;
+	justify-content: center;
+	width:         40px;
+	height:        40px;
+	border-radius: var(--radius-full);
+	border:        1px solid var(--border-default);
+	background:    var(--surface-card);
+	color:         var(--text-muted);
+	cursor:        pointer;
+	transition:
+		color       var(--duration-fast) var(--ease-tender),
+		background  var(--duration-fast) var(--ease-tender),
+		border-color var(--duration-fast) var(--ease-tender);
+}
+
+.landing__theme-btn:hover {
+	color:        var(--text-primary);
+	background:   var(--surface-raised);
+	border-color: var(--border-default);
+}
+
 /* -- Breathing ASCII art --------------------------------------------------- */
 
 .landing__art {
@@ -63,7 +107,7 @@ const router = useRouter()
 	justify-content: center;
 	font-family: 'Courier New', monospace;
 	font-size:   clamp(8px, 1.4vw, 16px);
-	line-height: 1.4;
+	line-height: 1.5;
 	color:       var(--color-carbon);
 	opacity:     0.14;
 	white-space: pre;

@@ -89,6 +89,7 @@ async function submit() {
 
 <template>
 	<main class="memory-form-page">
+		<div class="page-watermark" aria-hidden="true">✦</div>
 		<header class="memory-form-page__header">
 			<button class="memory-form-page__back btn btn--ghost" @click="router.back()">← back</button>
 			<h1 class="memory-form-page__title">add a memory</h1>
@@ -141,13 +142,19 @@ async function submit() {
 <style scoped>
 .memory-form-page {
 	padding:   var(--space-6) var(--space-4) calc(var(--space-16) + env(safe-area-inset-bottom));
-	max-width: 640px;
+	position:  relative;
+	z-index:   1;
+	max-width: 760px;
 	margin:    0 auto;
 }
 
-@media (min-width: 768px)  { .memory-form-page { margin-left: 64px;  padding-top: var(--space-8); } }
-@media (min-width: 1024px) { .memory-form-page { margin-left: 200px; } }
-@media (min-width: 1280px) { .memory-form-page { margin-left: 240px; max-width: 760px; } }
+@media (min-width: 768px) {
+	.memory-form-page {
+		margin-left:  max(var(--sidebar-w), calc((100vw - 760px) / 2));
+		margin-right: auto;
+		padding-top:  var(--space-8);
+	}
+}
 
 .memory-form-page__header {
 	margin-bottom: var(--space-6);

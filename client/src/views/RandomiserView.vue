@@ -53,6 +53,7 @@ async function spin() {
 
 <template>
 	<main class="randomiser-page">
+		<div class="page-watermark" aria-hidden="true">?</div>
 		<h1 class="randomiser-page__title">date night randomiser</h1>
 		<p class="randomiser-page__sub">let us plan your next adventure</p>
 
@@ -126,13 +127,19 @@ async function spin() {
 <style scoped>
 .randomiser-page {
 	padding:   var(--space-6) var(--space-4) calc(var(--space-16) + env(safe-area-inset-bottom));
-	max-width: 560px;
+	position:  relative;
+	z-index:   1;
+	max-width: 700px;
 	margin:    0 auto;
 }
 
-@media (min-width: 768px)  { .randomiser-page { margin-left: 64px;  padding-top: var(--space-8); } }
-@media (min-width: 1024px) { .randomiser-page { margin-left: 200px; } }
-@media (min-width: 1280px) { .randomiser-page { margin-left: 240px; max-width: 700px; } }
+@media (min-width: 768px) {
+	.randomiser-page {
+		margin-left:  max(var(--sidebar-w), calc((100vw - 700px) / 2));
+		margin-right: auto;
+		padding-top:  var(--space-8);
+	}
+}
 
 .randomiser-page__title {
 	margin:      0 0 var(--space-1);

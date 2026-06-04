@@ -59,6 +59,7 @@ async function joinWithCode() {
 
 <template>
 	<div class="pair-page">
+		<div class="page-watermark" aria-hidden="true">♡</div>
 		<div class="pair-page__inner">
 			<h1 class="pair-page__heading">pair with your partner</h1>
 			<p class="pair-page__sub">generate a code and share it, or enter the code your partner sent you</p>
@@ -81,7 +82,7 @@ async function joinWithCode() {
 					<p class="pair-card__code-hint">
 						waiting for them to join… once they enter this code you'll both land on the dashboard.
 					</p>
-					<BaseButton variant="ghost" @click="router.push('/dashboard')">
+					<BaseButton variant="secondary" @click="router.push('/dashboard')">
 						go to dashboard
 					</BaseButton>
 				</div>
@@ -123,6 +124,8 @@ async function joinWithCode() {
 }
 
 .pair-page__inner {
+	position:   relative; /* above the fixed watermark */
+	z-index:    1;
 	width:      100%;
 	max-width:  480px;
 	display:    flex;

@@ -64,6 +64,7 @@ async function confirmDelete() {
 
 <template>
 	<main class="memory-detail">
+		<div class="page-watermark" aria-hidden="true">✦</div>
 		<div v-if="loading" class="memory-detail__loading">loading…</div>
 		<p v-else-if="error" class="memory-detail__error">{{ error }}</p>
 
@@ -134,14 +135,20 @@ async function confirmDelete() {
 
 <style scoped>
 .memory-detail {
-	max-width: 800px;
+	position:  relative;
+	z-index:   1;
+	max-width: 900px;
 	margin:    0 auto;
 	padding-bottom: calc(var(--space-16) + env(safe-area-inset-bottom));
 }
 
-@media (min-width: 768px)  { .memory-detail { margin-left: calc(64px + var(--space-4));  } }
-@media (min-width: 1024px) { .memory-detail { margin-left: calc(200px + var(--space-4)); } }
-@media (min-width: 1280px) { .memory-detail { margin-left: calc(240px + var(--space-4)); max-width: 960px; } }
+@media (min-width: 768px) {
+	.memory-detail {
+		margin-left:  max(calc(var(--sidebar-w) + var(--space-4)), calc((100vw - 900px) / 2));
+		margin-right: auto;
+		padding-top:  var(--space-8);
+	}
+}
 
 .memory-detail__loading,
 .memory-detail__error {
