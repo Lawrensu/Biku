@@ -533,26 +533,47 @@ Biku is an intimate private space, not a product. Copy should feel like a soft w
 
 ### 13.3 Microcopy examples
 
+*Updated to match the copy actually shipped in the final build (verified against the view source directly — earlier drafts of this table described copy that changed during the polish rounds).*
+
 | Context | Copy |
 |---|---|
-| Empty memories state | `"nothing here yet — add your first memory together."` |
-| Mood prompt | `"how's your heart today?"` |
-| Date idea CTA | `"plan something special."` |
-| Shared list label | `"our list"` |
-| Dashboard greeting | `"good morning, [name]."` |
-| Dashboard day count | `"[n] days of choosing each other."` (italic Lora) |
-| Pair page prompt | `"invite your person."` |
-| Unpaired preview banner | `"invite your partner to unlock everything"` |
-| Memory form image prompt | `"find a photo for this moment"` |
-| Randomiser result CTA | `"let's do this"` |
+| Empty memories state | `"no memories yet — go make our first one together"` |
+| End of memories grid | `"go make more memories"` |
+| Mood prompt | `"how are you feeling today?"` |
+| Empty dates state | `"no important dates yet — add our anniversary, birthdays, or any day that matters"` |
+| Lists page heading | `"our lists"` |
+| Dashboard greeting | `"good morning, [name]"` / `"good afternoon, [name]"` / `"good evening, [name]"` |
+| Dashboard day count | `"[n] days together"` (italic Lora, `--accent-warm`) |
+| Pair page heading | `"pair with your partner"` |
+| Pair page subtitle | `"generate a code and share it, or enter the code your partner sent you"` |
+| Solo setup reminder (`PendingInviteBanner`) | `"this space is ready and waiting for them."` / `"share [code], and the moment they join, it's ours."` |
+| Memory form cover photo prompt | `"pick a cover photo"` |
+| Randomiser tagline | `"let us plan our next adventure"` |
+| Randomiser nudge (`RandomiserNudge`) | `"feeling spontaneous?"` / `"need an idea for the next one? spin the date randomiser"` |
 
 ### 13.4 What to avoid
 
 - Feature-announcement language: ~~"Track your moods with our powerful mood tracker"~~
-- Second person: ~~"Your memories"~~, ~~"You have 3 dates coming up"~~
+- Second person for shared things: ~~"Your memories"~~, ~~"You have 3 dates coming up"~~ — reserve "your"/"you" for things that belong to one person (your password, your email) or for correctly addressing the *other* partner ("your partner"); see the worked-through "your → our" pass below
 - Exclamation marks in UI chrome
 - Emoji in buttons or navigation
-- Passive empty states: ~~"No memories found"~~ → `"nothing here yet — add your first memory together."`
+- Passive empty states: ~~"No memories found"~~ → something that invites action, in our voice (see the empty-state examples above)
+
+### 13.5 The "your" → "our" rule of thumb
+
+Established during the final pre-submission pass after noticing the randomiser said *"let us plan your next adventure"* — jarring, since the app's whole voice is plural. The rule that resolved every case in the codebase (~27 instances reviewed individually):
+
+- **Change "your" to "our"** when the thing described is shared between the couple — memories, dates, lists, the couple itself, "our next adventure".
+- **Keep "your"** when it's about something that belongs to one person — your password, your email, your name, your account, your location (e.g. a GPS permission message is inherently individual).
+- **Keep "your partner"** — turning it into "our partner" would be grammatically backwards. From either partner's perspective, the *other* person is "yours" to you, not "ours" to the couple as a whole.
+
+### 13.6 A note on dashes in copy
+
+Two different instructions touched dashes during the build, and they're easy to conflate, so it's worth being precise for the report:
+
+- **Comments** (`//`, `/* */`, `<!-- -->`): a late-stage instruction removed dash-separated, templated-sounding phrasing from **every code comment** in the project, rewriting roughly 90 blocks into plain first-person developer voice.
+- **New UI copy for `PendingInviteBanner`**: written under an explicit "no dashes, no AI-slop language" brief, because that specific banner needed to feel unusually warm and human (it's the one moment in the app that directly narrates "your partner hasn't joined yet").
+- **Existing UI copy elsewhere** (empty states, error messages, the pair page's "that's your own code — share it with your partner") **was deliberately left untouched** — those dashes were already doing normal, readable English-sentence work and rewriting them wasn't part of either instruction. The table in 13.3 reflects this: some rows have dashes, some don't, and that's accurate to the shipped app, not an inconsistency to "fix."
 
 ---
 
@@ -587,15 +608,27 @@ const { days } = useCountdown(anniversaryDate, true)
 const { days } = useCountdown(anniversaryDate.value, true)
 ```
 
-### 14.3 Sidebar page layout offset
+### 14.3 Sidebar page layout offset — `--sidebar-w` + `max()` centring
 
-All content pages (not landing/auth) must offset their left margin to account for the sidebar on tablet and desktop. Use this pattern at the top of every view's scoped styles:
+This pattern evolved past a simple fixed-margin offset (an earlier draft of this doc showed flat `margin-left: 64px / 200px` breakpoints — that's no longer how it works). The shipped pattern uses a CSS custom property updated per breakpoint, combined with `max()` so content both clears the sidebar *and* centres itself in the remaining space on wide viewports:
 
 ```css
-/* Sidebar offset — matches AppNavbar widths */
-@media (min-width: 768px)  { .page-name { margin-left: 64px;  } }
-@media (min-width: 1024px) { .page-name { margin-left: 200px; } }
+/* defined once in main.css :root, updated per breakpoint */
+:root                       { --sidebar-w: 0px;   }
+@media (min-width: 768px)  { :root { --sidebar-w: 64px;  } }
+@media (min-width: 1024px) { :root { --sidebar-w: 200px; } }
+@media (min-width: 1280px) { :root { --sidebar-w: 240px; } }
+
+/* every content view repeats this two-line shape, swapping its own max-width */
+@media (min-width: 768px) {
+    .page-name {
+        margin-left:  max(var(--sidebar-w), calc((100vw - 960px) / 2));
+        margin-right: auto;
+    }
+}
 ```
+
+Why `max()` instead of a flat margin: at narrow tablet/laptop widths the sidebar width dominates (content sits flush against it), but on a wide monitor the `calc()` term takes over and the content block centres itself in the open space instead of hugging the sidebar with a huge gap on the right. One declaration handles both cases — no separate "centred" breakpoint needed. Each view substitutes its own content `max-width` (960px for the dashboard, 700px for settings, etc.) into the `calc()`.
 
 Mobile bottom nav is handled by adding bottom padding: `padding-bottom: calc(var(--space-16) + env(safe-area-inset-bottom))`.
 
@@ -608,15 +641,21 @@ Three packages must never enter the initial bundle:
 
 Never import these at the top level of `main.js` or `App.vue`.
 
-### 14.5 Empty states
+### 14.5 Empty states — invite, don't just inform
 
-Every list view must render a meaningful empty state — never a blank screen. Pattern:
+Every list view must render a meaningful empty state — never a blank screen — and the copy should read as an invitation in our voice ("come do this together"), not a status report ("no items found"). The actual shipped pattern, e.g. `MemoriesView.vue`:
 
 ```html
-<p v-else class="page__empty">
-    nothing here yet — <RouterLink to="/route/new">add your first one</RouterLink>
-</p>
+<div v-else class="memories-page__empty">
+    <p>no memories yet — go make our first one together</p>
+    <RouterLink to="/memories/new" class="btn btn--primary">add a memory</RouterLink>
+    <RandomiserNudge text="don't know where to start? let the randomiser plan our first date" />
+</div>
 ```
+
+Two refinements that came out of user feedback during polish:
+- The empty state doesn't just name the gap, it nudges toward the obvious next action — and, where it makes emotional sense, cross-links to the randomiser as a playful "don't know where to start?" suggestion (see 14.9 for why that link is a separate button, not copy-as-link).
+- A populated list/grid *also* gets a quieter footer nudge ("go make more memories", "feeling spontaneous? spin the date randomiser") — so the invitation to keep using the app isn't only shown to people with nothing in it yet.
 
 Style with `font-family: var(--font-body); color: var(--text-muted); font-size: var(--text-sm)`.
 
@@ -644,3 +683,36 @@ async function load() {
 ### 14.7 Unsplash attribution
 
 When displaying Unsplash images, attribution is required. `MemoryDetailView` overlays an attribution element on the cover image. Any other view showing Unsplash images must do the same. The attribution format is: `"photo by [author] on Unsplash"` with links to the author URL and `https://unsplash.com`.
+
+### 14.8 Entrance animations live on the base class, not in each view
+
+Rather than wrapping a dozen views' lists/grids in `<Transition>` / `<TransitionGroup>` (more code, more places to get it wrong, and brittle against `vue-draggable-plus`'s direct DOM manipulation in `ListContainer`), the "arrives gently" effect is a plain CSS `@keyframes` placed directly on the **shared base classes** — `.card` in `main.css` and `.list-item` in `ListItem.vue`:
+
+```css
+.card { animation: card-enter var(--duration-tender) var(--ease-enter); }
+@keyframes card-enter {
+    from { opacity: 0; transform: translateY(10px) scale(0.985); }
+    to   { opacity: 1; transform: translateY(0)     scale(1);    }
+}
+```
+
+This works because of a browser truth, not a Vue feature: `animation` plays the moment an element is inserted into the DOM, and Vue reuses existing DOM nodes for stable `v-for` `:key`s — so the animation naturally fires only for *genuinely new* elements (first load, freshly-added rows), never on reorders or sibling re-renders. One CSS rule, and every card-based surface in the app (memory cards, date cards, mood entries, dashboard tiles, the randomiser idea card, settings sections) gets it for free, present and future. Respects `prefers-reduced-motion` via the existing global override.
+
+**Important distinction for the report:** this is *not* the Vue `<Transition>` API. `<Transition>` *is* used elsewhere — page transitions in `App.vue`, `BaseModal`'s fade+scale, `BaseSelect`'s dropdown, the mobile "more" sheet in `AppNavbar`, the randomiser's spin/result swap — but card and list-item entrances are deliberately plain CSS keyframes on shared base classes. Both are legitimate "advanced animation" techniques; they're just different tools solving different problems (one-off transition between two states vs. a recurring "this just appeared" cue across many independent components).
+
+### 14.9 Splitting romantic copy from the call-to-action — `RandomiserNudge`
+
+A recurring tension in this app's voice is "warm and conversational" vs. "obviously clickable." An early pass folded both into one italic sentence-as-link, and a user testing it didn't realise it was a button. The fix wasn't to make the copy less warm — it was to give the *feeling* and the *action* their own visual homes:
+
+```html
+<p class="nudge__line">feeling spontaneous?</p>
+<RouterLink to="/randomiser" class="nudge__btn">
+    <Shuffle :size="16" /> spin the date randomiser
+</RouterLink>
+```
+
+The sentence stays soft, italic, first-person-plural prose. The button is a separate pill element — bordered, carrying the same `Shuffle` icon already used for `/randomiser` in the nav (instant recognition), with a hover state that fills solid and lifts. `RandomiserNudge.vue` centralises this so every place that wants to gesture toward the randomiser (`MemoriesView`, `DatesView` — both empty and populated states) gets the same treatment, and any future tweak to copy, icon, or hover propagates everywhere at once.
+
+### 14.10 Default-on capabilities keyed off existing props, not new booleans
+
+`BaseInput`'s password show/hide toggle (`Eye`/`EyeOff` from `lucide-vue-next`) is implemented as automatic behaviour of `type="password"`, not a new `revealable` boolean prop. Internally it swaps the rendered `<input type>` between `password` and `text` via a local `revealed` ref + `effectiveType` computed, while the `type` prop passed in by the caller stays untouched. Every password field in the app — register, login, settings — gets the feature immediately and identically, with zero call-site changes and no risk of someone forgetting to opt in. This mirrors `BaseInput`'s existing `sanitize`/`rules` philosophy: behaviour keyed off semantic props that are already there, rather than a constantly-growing list of opt-in flags.

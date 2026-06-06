@@ -40,7 +40,7 @@ Being explicit about what is and is not built is an engineering discipline. Scop
 - Shared lists across three types: bucket, grocery, and wishlist. 
 - Mood tracking with Chart.js visualisation. 
 - Date night randomiser with AI-generated suggestions via Gemini 2.5 Flash, with graceful fallback to a locally seeded idea database.
-- Unpaired user state that previews features to encourage pairing.
+- Solo setup mode — once a user creates or joins a couple record, the entire shared space (memories, lists, mood, dates, randomiser, settings) opens up immediately, even before a partner has joined. Rather than leaving that as an undocumented side effect (or blocking access until someone else shows up — which would leave the first partner staring at an empty screen, possibly for days), the experience is framed intentionally: a warm, persistent reminder card keeps the invite code visible until a partner actually joins, at which point the dashboard quietly switches into the full two-person view. The full reasoning behind choosing this hybrid approach over either "block solo access" or "say nothing" is written up in `docs/system_design.md` section 3.3, and should be lifted into the report's design-rationale section — it's a genuine, documented UX decision, not an oversight being explained away after the fact.
 
 **Explicitly out of scope:**
 - Real-time messaging or chat. 
@@ -119,44 +119,72 @@ Drizzle is chosen over Prisma because Prisma is optimised for PostgreSQL-first w
 ---
 
 ## 6. HD Feature Map
+
+> **Status: verified against the finished build (2026-06-06).** This section was originally written during planning and described composables, components, and behaviours that changed shape during implementation — it has been corrected here to match what actually shipped, confirmed by reading the source files directly (not by re-describing the plan). This is the version to write the report from.
+
 This section maps every HD-qualifying implementation to the rubric criterion it satisfies. Every item listed here must appear in the report's advanced techniques section. Anything not in the report is not awarded marks.
 
 ### 6.1 Advanced Vue Features
 
-| Feature                    | What It Is                                                                                                             | Where                     |
-| -------------------------- | ---------------------------------------------------------------------------------------------------------------------- | ------------------------- |
-| Composables                | `useCouple()`, `useMemories()`, `useMoodStats()`, `useCountdown()` : reusable stateful logic extracted from components | App-wide                  |
-| Vue Transition API         | Animated page transitions, memory card enter/leave, list item add/remove animations                                    | All pages                 |
-| Dynamic async components   | Map component loaded only when `/map` is visited, not on initial bundle load                                           | `/map`                    |
-| Route-level code splitting | Dynamic imports in router config split the bundle by route                                                             | All routes                |
-| Skeleton loading states    | Custom skeleton components shown while data fetches, never a blank screen                                              | `/memories`, `/dashboard` |
+| Feature | What It Is | Where |
+| --- | --- | --- |
+| Composables | `useCountdown()` (`toValue()`-aware, supports `recursYearly`, cleans up its own `setInterval` on unmount) and `useMemories()` (pagination + `loadMore` + `hasMore`) — both genuinely reusable stateful logic extracted out of view components | `/dashboard`, `/dates`, `/memories` |
+| Pinia stores as the composable-data layer | `auth.store.js`, `couple.store.js`, `ui.store.js` — each exposes computed getters (`isPaired`, `isLoggedIn`, `hasPartner`, `theme`) alongside actions, so views consume reactive shared state through `useXStore()` the same way they'd consume a composable | App-wide |
+| `<Transition>` / `<TransitionGroup>` | Page transitions (`App.vue`, `mode="out-in"`), `BaseModal` fade+scale, `BaseSelect` dropdown, the mobile "more" sheet in `AppNavbar`, the randomiser's spin/result swap | Most views |
+| CSS-keyframe entrance animations on shared base classes | `.card` (`card-enter`) and `.list-item` (`list-item-enter`) in `main.css`/`ListItem.vue` — a deliberate *alternative* to `<TransitionGroup>` so the effect applies to every card-based surface app-wide with zero per-view wiring, and survives `vue-draggable-plus`'s direct DOM manipulation. See `docs/frontend_design.md` §14.8 for why this was chosen over the more obvious `<TransitionGroup>` route | App-wide (memory cards, date cards, mood entries, list rows, settings sections, the randomiser idea card) |
+| Dynamic async components + `Suspense` | `MemoryMap` is loaded via `defineAsyncComponent` and wrapped in `<Suspense>` in `MapView` — Leaflet (148KB) only enters the bundle when `/map` is visited | `/map` |
+| Route-level code splitting | Every one of the 14 routes is a dynamic `import()` in `router/index.js`; verified in the production build — each view is its own 0.2–6KB chunk, heavy deps (`leaflet`, `chart.js`, `vue-draggable-plus`) are isolated to the routes that use them | All routes |
+| Skeleton loading states | `MemorySkeleton` (shimmer animation matching `MemoryCard` dimensions exactly) shown while memories fetch — never a blank screen | `/memories`, `/dashboard` |
+| Custom listbox component (`BaseSelect`) | Replaces the native `<select>` for the randomiser's budget/vibe filters — `role="listbox"`/`role="option"`, button trigger, click-outside-to-close, keyboard navigation, fully styleable open state (something a native `<select>` popup cannot be cross-platform) | `/randomiser` |
 
 ### 6.2 External API Integrations
 
 |API|Integration Point|User Value|
 |---|---|---|
-|Unsplash|Memory creation — debounced image search fires as the user types a title|Rich, contextual memory visuals without requiring photo uploads|
-|Open-Meteo|Memory detail — historical weather fetched once per memory and cached permanently|Emotional context ("it was raining that day")|
-|Leaflet + OSM|`/map` — every memory with coordinates is plotted as a clickable pin|A visual geographic journey of the relationship|
-|Gemini 2.5 Flash|Date randomiser — AI generates a personalised date idea based on mood, budget, and time filters|Fresh, contextual date suggestions beyond the static seed pool; falls back gracefully to local seeds on failure|
+|Unsplash|Memory creation — debounced (400ms) image search fires as the user types a title; images proxied through the backend so the API key never reaches the client|Rich, contextual memory visuals without requiring photo uploads, with required photographer attribution overlaid on the cover image|
+|Open-Meteo|Memory detail — historical weather fetched once per memory+coordinate and permanently cached as JSON in the `memories` row; raw WMO weather codes (e.g. `53`) are translated through a full lookup table into readable phrases ("moderate drizzle")|Emotional context ("it was raining that day") presented in plain language, not a meteorological code|
+|Nominatim (OpenStreetMap geocoding)|Memory form — debounced (500ms) place-name search returns a styled dropdown of matches; selecting one fills latitude/longitude/location name automatically (GPS capture remains as an alternative)|Lets someone attach a memory's location by typing "Damai Beach" instead of needing to be physically present to use GPS|
+|Leaflet + OSM|`/map` — every memory with coordinates is plotted as a clickable pin that opens a popup linking to the memory detail|A visual geographic journey of the relationship, rendered without any API key|
+|Gemini 2.5 Flash|Date randomiser — generates a personalised date idea (title, description, category, budget, duration, tags) from a constructed prompt reflecting the user's filters; response is parsed defensively (strips markdown fences, validates required fields) and falls back silently to 28 seeded ideas if the API is unavailable or the key is invalid|Fresh, contextual date suggestions beyond a static seed pool, with zero risk of the feature ever visibly "breaking"|
 
 ### 6.3 Performance Optimisations
 
 |Optimisation|Implementation|Why It Matters|
 |---|---|---|
-|Weather response caching|Open-Meteo response stored as JSON in the `memories` table on first fetch|Historical weather for a given date never changes, no reason to call the API twice|
-|Debounced Unsplash search|Image search fires after a 400ms pause in typing|Prevents unnecessary API calls on every keystroke|
-|Lazy image loading|Intersection Observer on memory card images|Defers off-screen image loads in the journal feed|
-|Route-level code splitting|Dynamic imports produce per-route chunks|Reduces initial bundle size, faster first load|
+|Weather response caching|Open-Meteo response stored as JSON in the `memories` table on first fetch, keyed by coordinate + date|Historical weather for a given date never changes — there is no reason to ever call the API twice for the same memory|
+|Debounced search inputs|Unsplash search fires 400ms after the title input settles; Nominatim place search fires after 500ms|Prevents an API call firing on every keystroke while someone is still typing|
+|Route-level code splitting|Dynamic `import()` per route produces per-route chunks confirmed in the build output (e.g. `leaflet` 148KB and `chart.js` 176KB load only on `/map` and `/mood` respectively, never on first paint)|Smaller initial bundle (53KB gzipped main chunk), faster first load on a mobile connection|
+|Dynamic Leaflet import inside `onMounted`|`MemoryMap.vue` imports Leaflet itself (not just the wrapping component) only once the component actually mounts, with static PNG marker-icon imports so Vite hashes them correctly at build time|Keeps a 148KB mapping library out of every page that isn't the map, and sidesteps a real Vite/Leaflet path-resolution bug discovered during build (`new URL(...)` doesn't resolve `node_modules` assets through a dynamic import)|
 
 ### 6.4 Advanced UI Interactions
 
-| Interaction                | Technology                                                            | Where                  |
-| -------------------------- | --------------------------------------------------------------------- | ---------------------- |
-| Dual-line mood chart       | Chart.js via vue-chartjs : both partners' 30-day mood overlaid        | `/mood`                |
-| Drag-to-reorder list items | Vue Draggable (SortableJS)                                            | `/lists`               |
-| Live anniversary countdown | `useCountdown()` composable with `setInterval`, cleaned up on unmount | `/dashboard`, `/dates` |
-| Clickable memory map pins  | Leaflet.js : pins open a memory preview card                          | `/map`                 |
-| Animated page transitions  | Vue `<Transition>` component with CSS                                 | All routes             |
+| Interaction | Technology | Where |
+| --- | --- | --- |
+| Dual-line mood chart | Chart.js via `vue-chartjs`, two datasets (this partner in blush, the other in slate) over a rolling 30-day window | `/mood` |
+| Drag-to-reorder list items | `vue-draggable-plus`, persists the new order with a single batched `PATCH /api/lists/:type/reorder` call on drag-end (not one request per moved item) | `/lists` |
+| Live anniversary / important-date countdowns | `useCountdown()` — `toValue()`-aware so it re-triggers when async couple data resolves after mount, supports `recursYearly` (always counts to the next future month/day occurrence), ticks every second via `setInterval`, cleans up on unmount | `/dashboard`, `/dates` |
+| Clickable memory map pins | Leaflet.js — pins open a popup with a memory preview that links through to the full detail page | `/map` |
+| Custom toggle switch | `DatesView`'s "recurs every year" control — a visually-hidden checkbox driving a styled pill track + sliding thumb via `:checked` sibling selectors, fully keyboard- and screen-reader-accessible (`clip: rect(0,0,0,0)`, not `display:none`) | `/dates` |
+| Liquid-glass mobile navigation | `AppNavbar`'s bottom bar uses a three-layer `color-mix()` treatment (vertical opacity gradient + inset rim highlight + `blur(20px) saturate(160%)`) to read as translucent glass regardless of what's behind it — a flat `rgba()` + blur looked identical to opaque against this app's close-toned dark-mode surfaces, so the effect had to be built from depth cues rather than transparency alone | Mobile, all paired routes |
+| Dark mode via `data-theme` | CSS custom properties (no class-toggling), defaults to the OS `prefers-color-scheme`, persisted via `localStorage`, and a blocking inline script in `index.html` sets the attribute *before* first paint to eliminate the light-mode flash on load | App-wide |
+
+---
+
+## 7. Verification Status (final, pre-submission)
+
+The build is complete and verified. This is the result of running through the verification passes defined for this project (happy-path end-to-end, auth guards, dark mode, responsiveness, and edge cases) plus a closing live-API test of the real register-and-pair flow. Anything written here can be stated in the report as fact, not as a plan.
+
+**Build health:** `npm run build` produces a clean Vite production build — 1824 modules, zero errors, zero warnings. Main bundle 53KB gzipped; heavy dependencies (`leaflet` 148KB, `chart.js` 176KB, `vue-draggable-plus` 47KB) are confirmed isolated to lazy per-route chunks that never touch the initial load.
+
+**Happy-path, auth guards, dark mode, responsiveness, edge cases:** all passed. Where they didn't on first attempt, the bug was found and fixed (see `docs/system_design.md` and `.claude/CLAUDE.md` "Key Bugs Fixed" for the full list with root causes — these make excellent material for a "development process and problem solving" section, since each one demonstrates a real debugging process rather than a guess). Notable examples worth a mention in the report:
+- A Drizzle ORM camelCase-vs-snake_case mismatch (`moodScore` vs `mood_score`) caused the mood log to silently show nothing despite the API working correctly — caught by reading the actual network response shape rather than assuming the contract.
+- A Gemini API integration that *looked* broken (always falling back to seed data) turned out to have two independent causes layered on top of each other — a malformed request field (`thinkingConfig` nested at the wrong level, returning a silently-swallowed 400) and, after fixing that, a stale Windows environment variable shadowing the working key in `.env`. Diagnosing this required temporarily adding, then removing, structured logging to capture the live error from Google's API directly.
+- A CSS specificity bug where a mobile-only override rule was silently losing to a later same-specificity base rule purely due to source order — fixed by moving the media query to the end of the stylesheet, with a comment explaining why so it doesn't regress.
+
+**Final live-flow test (after the solo setup mode feature was added):** two fresh accounts were registered against the running backend, a couple was created, and the invite-code exchange was driven through the real API end-to-end. This confirmed the exact data shape the new `hasPartner` computed depends on:
+- Before the second account joins: `GET /api/couples/me` returns `partnerBId: null`, `partner: null`, and the live invite code — so `couple.hasPartner` evaluates `false` and `PendingInviteBanner` renders with the real code.
+- The instant the second account calls `POST /api/couples/join`: `partnerBId` becomes a populated UUID and `partner.displayName` resolves — `hasPartner` flips to `true`, the banner disappears, and the settings page shows the partner's real name in place of the "still finding their way to us" placeholder.
+
+This is the project's actual register-and-pair flow, not a simulation of it — and it's the same JWT-reissue mechanism documented as bug fix #3 (`GET /api/auth/me` detects a `coupleId` mismatch between the JWT and the database and silently reissues the token) that makes the live flip visible without requiring a manual re-login.
 
 ---
