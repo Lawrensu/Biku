@@ -36,9 +36,10 @@ defineProps({
 
 <style>
 /*
-	Base .btn styles live in main.css (global) so RouterLink / <a> / <button>
-	elements throughout the app can use btn classes without this wrapper.
-	Only the spinner — which is exclusive to BaseButton — is defined here.
+	the base .btn styles live in main.css (global), so RouterLink, <a> and
+	<button> elements throughout the app can use btn classes without needing
+	this wrapper. the spinner is the only thing exclusive to BaseButton, so
+	that's the only thing defined here.
 */
 .btn__spinner {
 	display:       block;

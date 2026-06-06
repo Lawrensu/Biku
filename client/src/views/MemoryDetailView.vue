@@ -16,10 +16,19 @@ const deleteModal  = ref(false)
 const deleteLoading = ref(false)
 const error        = ref('')
 
+// full WMO weather code scale from Open-Meteo, so the widget reads
+// "moderate drizzle" instead of a bare "code 53"
 const weatherCodes = {
 	0: 'clear sky', 1: 'mainly clear', 2: 'partly cloudy', 3: 'overcast',
-	45: 'foggy', 51: 'light drizzle', 61: 'light rain', 71: 'light snow',
-	80: 'showers', 95: 'thunderstorm',
+	45: 'foggy', 48: 'rime fog',
+	51: 'light drizzle', 53: 'moderate drizzle', 55: 'dense drizzle',
+	56: 'light freezing drizzle', 57: 'dense freezing drizzle',
+	61: 'light rain', 63: 'moderate rain', 65: 'heavy rain',
+	66: 'light freezing rain', 67: 'heavy freezing rain',
+	71: 'light snow', 73: 'moderate snow', 75: 'heavy snow', 77: 'snow grains',
+	80: 'light showers', 81: 'moderate showers', 82: 'violent showers',
+	85: 'light snow showers', 86: 'heavy snow showers',
+	95: 'thunderstorm', 96: 'thunderstorm with light hail', 99: 'thunderstorm with heavy hail',
 }
 
 const weatherLabel = computed(() => {
@@ -34,12 +43,13 @@ onMounted(async () => {
 		const data = await getMemory(route.params.id)
 		memory.value = data?.memory ?? null
 
-		// Fetch weather if coordinates exist — Drizzle returns memoryDate (camelCase)
+		// only fetch weather if we actually have coords + a date to look up.
+		// note Drizzle hands the date back as memoryDate (camelCase), not memory_date.
 		if (memory.value?.lat && memory.value?.lng && memory.value?.memoryDate) {
 			try {
 				const w = await getWeather(memory.value.lat, memory.value.lng, memory.value.memoryDate)
 				weather.value = w?.weather ?? null
-			} catch { /* weather is optional — no crash */ }
+			} catch { /* weather is a nice extra, not essential, so we just skip it quietly */ }
 		}
 	} catch (e) {
 		error.value = e.message || 'memory not found'

@@ -1,12 +1,12 @@
 /* ============================================================
-   Biku — main.css
+   Biku main.css
    Tailwind v4 entry point + semantic design token layer.
 
    Structure:
    1. Tailwind import (utilities, reset, base)
-   2. Raw palette (reference only — never use directly in components)
-   3. Semantic tokens — :root (light mode)
-   4. Semantic tokens — [data-theme="dark"]
+   2. Raw palette (reference only, don't use these directly in components)
+   3. Semantic tokens, :root (light mode)
+   4. Semantic tokens, [data-theme="dark"]
    5. Typography tokens
    6. Spacing scale
    7. Border radius tokens
@@ -33,37 +33,37 @@
 */
 
 
-/* ── 3. Semantic tokens — light mode ─────────────────────── */
+/* ── 3. Semantic tokens, light mode ─────────────────────── */
 
 :root {
 	/* Surfaces */
-	--surface-base:     #FDFAF8; /* page background — warm off-white, never pure white */
-	--surface-raised:   #F4EDE7; /* inputs, chips, sidebar hover — subtle lift above base */
-	--surface-card:     #FFFFFF; /* cards, panels — clear lift over base */
+	--surface-base:     #FDFAF8; /* page background, a warm off-white, never pure white */
+	--surface-raised:   #F4EDE7; /* inputs, chips, sidebar hover, a subtle lift above base */
+	--surface-card:     #FFFFFF; /* cards and panels, a clear lift over base */
 	--surface-elevated: #F5EDE0; /* modals, dropdowns */
 
 	/* Text */
 	--text-primary:   #1B1C20;
 	--text-secondary: #5B6E7D;
-	--text-muted:     #6B7D87; /* darkened from #8A9BA6 — contrast justification: linen bg */
+	--text-muted:     #6B7D87; /* darkened from #8A9BA6 for better contrast on the linen background */
 	--text-on-blush:  #5C0403; /* text sitting on blush surfaces */
 	--text-on-dark:   #FAF1E8; /* text sitting on carbon/slate surfaces */
 
 	/* Brand */
-	--accent-warm: #EDB1B0; /* powder blush — primary brand accent */
-	--accent-cool: #5B6E7D; /* blue slate — secondary accent */
+	--accent-warm: #EDB1B0; /* powder blush, the primary brand accent */
+	--accent-cool: #5B6E7D; /* blue slate, the secondary accent */
 
 	/* Destructive / Error */
 	--error-text:    #5C0403;
 	--error-surface: #F5E8E8;
 	--error-border:  #D4A0A0;
 
-	/* Interactive — primary button (blush) */
+	/* Interactive: primary button (blush) */
 	--btn-primary-bg:       #EDB1B0;
 	--btn-primary-text:     #5C0403;
 	--btn-primary-hover-bg: #E4A09F;
 
-	/* Interactive — secondary button (carbon) */
+	/* Interactive: secondary button (carbon) */
 	--btn-secondary-bg:       #1B1C20;
 	--btn-secondary-text:     #FAF1E8;
 	--btn-secondary-hover-bg: #2E2F35;
@@ -78,37 +78,37 @@
 }
 
 
-/* ── 4. Semantic tokens — dark mode ──────────────────────── */
+/* ── 4. Semantic tokens, dark mode ──────────────────────── */
 
 [data-theme='dark'] {
-	/* Surfaces — warm-dark stack, three levels of elevation */
+	/* Surfaces: warm-dark stack, three levels of elevation */
 	--surface-base:     #1A1612; /* warm black */
-	--surface-raised:   #211D17; /* inputs, chips, sidebar hover — subtle lift above base */
+	--surface-raised:   #211D17; /* inputs, chips, sidebar hover, a subtle lift above base */
 	--surface-card:     #242019; /* cards, panels */
 	--surface-elevated: #2E2920; /* modals, dropdowns */
 
 	/* Text */
-	--text-primary:   #FAF1E8; /* linen inverted to foreground */
+	--text-primary:   #FAF1E8; /* linen, inverted to sit as the foreground here */
 	--text-secondary: #9E9890;
-	--text-muted:     #8A847E; /* darkened from #6B6560 — dark-mode contrast on warm surfaces */
-	--text-on-blush:  #5C0403; /* unchanged — blush surfaces exist in both modes */
+	--text-muted:     #8A847E; /* darkened from #6B6560 so it still reads on warm dark surfaces */
+	--text-on-blush:  #5C0403; /* same in both modes, since blush surfaces exist in both */
 	--text-on-dark:   #FAF1E8;
 
-	/* Brand — identity colours, unchanged in dark mode */
+	/* Brand: identity colours stay the same in dark mode */
 	--accent-warm: #EDB1B0;
 	--accent-cool: #5B6E7D;
 
-	/* Destructive / Error — lightened for legibility on dark surfaces */
+	/* Destructive / Error: lightened so they stay legible on dark surfaces */
 	--error-text:    #F0A0A0;
 	--error-surface: #2A1515;
 	--error-border:  #5C2020;
 
-	/* Interactive — primary button unchanged */
+	/* Interactive: primary button unchanged */
 	--btn-primary-bg:       #EDB1B0;
 	--btn-primary-text:     #5C0403;
 	--btn-primary-hover-bg: #E4A09F;
 
-	/* Interactive — secondary button inverted */
+	/* Interactive: secondary button, colours flipped for dark mode */
 	--btn-secondary-bg:       #FAF1E8;
 	--btn-secondary-text:     #1B1C20;
 	--btn-secondary-hover-bg: #EDE4D6;
@@ -118,7 +118,7 @@
 	--border-default: rgba(250, 241, 232, 0.12);
 	--border-strong:  rgba(250, 241, 232, 0.24);
 
-	/* Focus ring — unchanged */
+	/* Focus ring: unchanged */
 	--focus-ring: #EDB1B0;
 }
 
@@ -130,14 +130,14 @@
 	--font-body:    'Lora', Georgia, serif;
 
 	/* Type scale */
-	--text-xs:   0.75rem;   /* 12px — labels, captions */
-	--text-sm:   0.875rem;  /* 14px — secondary body, metadata */
-	--text-base: 1rem;      /* 16px — primary body text */
-	--text-lg:   1.125rem;  /* 18px — lead paragraphs */
-	--text-xl:   1.25rem;   /* 20px — small headings */
-	--text-2xl:  1.5rem;    /* 24px — section headings */
-	--text-3xl:  1.875rem;  /* 30px — page headings */
-	--text-4xl:  2.25rem;   /* 36px — display / hero */
+	--text-xs:   0.75rem;   /* 12px, labels and captions */
+	--text-sm:   0.875rem;  /* 14px, secondary body and metadata */
+	--text-base: 1rem;      /* 16px, primary body text */
+	--text-lg:   1.125rem;  /* 18px, lead paragraphs */
+	--text-xl:   1.25rem;   /* 20px, small headings */
+	--text-2xl:  1.5rem;    /* 24px, section headings */
+	--text-3xl:  1.875rem;  /* 30px, page headings */
+	--text-4xl:  2.25rem;   /* 36px, display and hero text */
 
 	/* Weights */
 	--weight-regular:  400;
@@ -184,15 +184,15 @@
 
 :root {
 	/* Easing */
-	--ease-tender: cubic-bezier(0.25, 0.46, 0.45, 0.94); /* default — slow, gentle finish */
+	--ease-tender: cubic-bezier(0.25, 0.46, 0.45, 0.94); /* the default: slow, with a gentle finish */
 	--ease-enter:  cubic-bezier(0.0,  0.0,  0.2,  1.0);  /* elements entering the screen */
 	--ease-exit:   cubic-bezier(0.4,  0.0,  1.0,  1.0);  /* elements leaving the screen */
 
 	/* Duration scale */
 	--duration-fast:   150ms; /* hover states, focus rings, small toggles */
-	--duration-normal: 250ms; /* component transitions — cards, list items */
+	--duration-normal: 250ms; /* component transitions: cards, list items */
 	--duration-slow:   350ms; /* page transitions */
-	--duration-tender: 400ms; /* emotional moments — memory reveal, countdown */
+	--duration-tender: 400ms; /* emotional moments: memory reveal, countdown */
 }
 
 
@@ -253,7 +253,7 @@ select {
 	font-family: var(--font-body);
 }
 
-/* Remove default focus outline — components apply their own via --focus-ring */
+/* drop the browser's default focus outline, components draw their own via --focus-ring */
 :focus {
 	outline: none;
 }
@@ -328,14 +328,31 @@ select {
 	box-shadow:
 		0 2px 8px rgba(27, 28, 32, 0.06),
 		0 1px 2px rgba(27, 28, 32, 0.04);
+	/*
+		a soft entrance: cards ease up and fade in as they mount instead of
+		snapping into place. this is the "small details matter" pass, so a
+		freshly logged mood entry, a newly added date, a memory card landing
+		in the grid all feel like they arrive rather than just appear. it's
+		plain CSS, so it plays automatically whenever the element lands in the
+		DOM, and because Vue reuses DOM nodes for stable `v-for` `:key`s, it
+		only fires for genuinely new nodes, not on reorders or sibling
+		re-renders. prefers-reduced-motion is handled by the global override
+		near the bottom of this file.
+	*/
+	animation: card-enter var(--duration-tender) var(--ease-enter);
 }
 
-/* Shadows suppressed in dark mode — surface colour difference provides elevation */
+@keyframes card-enter {
+	from { opacity: 0; transform: translateY(10px) scale(0.985); }
+	to   { opacity: 1; transform: translateY(0)    scale(1);     }
+}
+
+/* shadows are switched off in dark mode, the surface colour shift gives enough elevation on its own */
 [data-theme='dark'] .card {
 	box-shadow: none;
 }
 
-/* Interactive card — used by MemoryCard and similar clickable surfaces */
+/* interactive card, used by MemoryCard and other clickable surfaces like it */
 .card-interactive {
 	transition:
 		transform   var(--duration-fast) var(--ease-tender),
@@ -407,7 +424,7 @@ select {
 	color:      var(--btn-primary-text);
 }
 .btn--primary:not(:disabled):not([disabled]):hover {
-	background: var(--btn-primary-hover-bg); /* was --btn-primary-hover — corrected */
+	background: var(--btn-primary-hover-bg); /* this used to point at --btn-primary-hover, fixed to the real token name */
 }
 
 .btn--secondary {
@@ -429,7 +446,7 @@ select {
 }
 
 .btn--danger {
-	background: var(--error-surface); /* was --error-bg — corrected to defined token */
+	background: var(--error-surface); /* this used to point at --error-bg, fixed to a token that's actually defined */
 	color:      var(--error-text);
 	border:     1px solid var(--error-border);
 }
@@ -487,7 +504,7 @@ select {
 	transition:     padding-left var(--duration-slow) var(--ease-tender);
 }
 
-/* Suppress in reduced-motion contexts — already handled globally but be explicit */
+/* the global override already covers reduced-motion, but spelling it out here too for clarity */
 @media (prefers-reduced-motion: reduce) {
 	.page-watermark { transition: none; }
 }

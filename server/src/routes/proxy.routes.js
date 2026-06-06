@@ -22,7 +22,7 @@ const geocodeQuerySchema = z.object({
 
 
 export async function proxyRoutes(fastify) {
-	// Unsplash image search — API key never leaves the server
+	// search Unsplash through us, so the API key stays server-side and never reaches the client
 	fastify.get('/api/proxy/unsplash/search', { preHandler: requiresAuth }, async (request, reply) => {
 		const parsed = unsplashQuerySchema.safeParse(request.query);
 		if (!parsed.success) {
@@ -44,7 +44,7 @@ export async function proxyRoutes(fastify) {
 
 		const json = await res.json();
 
-		// Normalise to a minimal shape — frontend only needs these four fields
+		// trim it down to the four fields the frontend actually needs
 		const images = (json.results ?? []).map((photo) => ({
 			url:        photo.urls.regular,
 			thumb_url:  photo.urls.thumb,
@@ -56,7 +56,7 @@ export async function proxyRoutes(fastify) {
 	});
 
 
-	// Nominatim geocoding — converts a place name string into lat/lng coordinates.
+	// Nominatim geocoding. turns a typed place name into lat/lng coordinates.
 	// OpenStreetMap Nominatim is free, no API key required, consistent with our
 	// Leaflet/OSM map stack. We proxy server-side to (a) set the required
 	// User-Agent header and (b) keep the external call out of the browser.
@@ -86,7 +86,7 @@ export async function proxyRoutes(fastify) {
 
 		const data = await res.json();
 
-		// Normalise to a minimal shape — frontend only needs name, displayName, lat, lng
+		// trim it down to what the frontend actually uses: name, displayName, lat, lng
 		const results = data.map((r) => ({
 			name:        r.name || r.display_name.split(',')[0].trim(),
 			displayName: r.display_name,
@@ -98,7 +98,7 @@ export async function proxyRoutes(fastify) {
 	});
 
 
-	// Weather proxy — checks SQLite first, calls Open-Meteo only on cache miss.
+	// weather proxy. checks the SQLite cache first and only calls Open-Meteo on a miss.
 	// Historical weather for a (lat, lng, date) is immutable, so cached results
 	// are valid forever and the same data will never need to be fetched twice.
 	fastify.get('/api/proxy/weather', { preHandler: requiresAuth }, async (request, reply) => {
@@ -109,8 +109,8 @@ export async function proxyRoutes(fastify) {
 
 		const { lat, lng, date } = parsed.data;
 
-		// Round coordinates to 2 decimal places (~1 km precision) for cache lookup —
-		// avoids cache misses caused by floating-point noise in repeated requests
+		// round to 2 decimal places (about 1km precision) before the cache lookup,
+		// so floating-point noise across repeated requests doesn't cause needless misses
 		const latR = Math.round(lat * 100) / 100;
 		const lngR = Math.round(lng * 100) / 100;
 
@@ -132,11 +132,11 @@ export async function proxyRoutes(fastify) {
 				const weather = JSON.parse(cached.weatherData);
 				return reply.send({ weather, cached: true });
 			} catch {
-				// Corrupt cache entry — fall through to a fresh fetch
+				// the cached row didn't parse cleanly, so just treat it as a miss and refetch
 			}
 		}
 
-		// Cache miss — fetch from Open-Meteo
+		// nothing cached, so go fetch it from Open-Meteo
 		const weather = await fetchWeather(lat, lng, date);
 		if (!weather) {
 			return reply.code(502).send({ error: 'weather data unavailable', code: 'UPSTREAM_ERROR' });

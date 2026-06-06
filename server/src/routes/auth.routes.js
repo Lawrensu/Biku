@@ -85,7 +85,7 @@ export async function authRoutes(fastify) {
 
 
 	fastify.get('/api/auth/me', { preHandler: requiresAuth }, async (request, reply) => {
-		// Always read from DB — the JWT may be stale if the user just paired
+		// always read from the DB here, since the JWT can be stale right after pairing
 		const user = db.select().from(users).where(eq(users.id, request.user.id)).get();
 		if (!user) {
 			return reply.code(401).send({ error: 'user not found', code: 'UNAUTHENTICATED' });

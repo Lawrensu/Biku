@@ -34,7 +34,13 @@ async function submit() {
 		const redirect = route.query.redirect || '/dashboard'
 		router.push(String(redirect))
 	} catch (e) {
-		generalError.value = e.message || 'incorrect email or password — give it another try'
+		// the backend returns { error: 'invalid credentials', code: 'INVALID_CREDENTIALS' }
+		// for bad logins, so we map known codes to warmer, branded copy instead of
+		// surfacing raw API strings. the old generic 401 fallback ("Unauthenticated")
+		// read like a system error, not a gentle "try again".
+		generalError.value = e.code === 'INVALID_CREDENTIALS'
+			? "that email and password don't match what we have — give it another go"
+			: (e.message || "something went sideways — give it another try")
 	} finally {
 		loading.value = false
 	}

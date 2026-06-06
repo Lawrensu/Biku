@@ -1,7 +1,7 @@
 <script setup>
 import { defineAsyncComponent } from 'vue'
 
-// MemoryMap uses Leaflet — dynamically imported so it's never in the initial bundle
+// MemoryMap uses Leaflet, so it's dynamically imported and never lands in the initial bundle
 const MemoryMap = defineAsyncComponent(() => import('../components/memory/MemoryMap.vue'))
 </script>
 

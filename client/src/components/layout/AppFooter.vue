@@ -23,7 +23,7 @@ const year = new Date().getFullYear()
 	color:       var(--text-muted);
 }
 
-/* hidden on mobile — only shown on tablet+ */
+/* hidden on mobile, only shown on tablet and up */
 @media (max-width: 767px) {
 	.app-footer { display: none; }
 }

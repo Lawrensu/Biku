@@ -15,8 +15,9 @@ import { proxyRoutes }       from './routes/proxy.routes.js';
 const fastify = Fastify({ logger: true });
 
 // Allow POST/PUT/PATCH requests with no body when Content-Type is application/json.
-// Fastify throws FST_ERR_CTP_EMPTY_JSON_BODY by default — routes like POST /api/couples
-// have no body, and the frontend will omit one. Treat empty body as an empty object.
+// Fastify throws FST_ERR_CTP_EMPTY_JSON_BODY by default. Some routes, like POST
+// /api/couples, have no body and the frontend won't send one, so we treat an
+// empty body as an empty object instead of letting Fastify reject it.
 fastify.addContentTypeParser('application/json', { parseAs: 'string' }, (_req, body, done) => {
 	if (!body || body === '') return done(null, {});
 	try {
@@ -27,10 +28,10 @@ fastify.addContentTypeParser('application/json', { parseAs: 'string' }, (_req, b
 	}
 });
 
-// Cookies — required for httpOnly JWT
+// cookies, needed since the JWT lives in an httpOnly cookie
 await fastify.register(cookie);
 
-// CORS — allow the Vite dev server origin in development
+// CORS, so the Vite dev server origin is allowed through in development
 await fastify.register(cors, {
 	origin:      process.env.CLIENT_ORIGIN ?? 'http://localhost:5173',
 	credentials: true, // required so the browser sends cookies cross-origin
@@ -46,7 +47,7 @@ await fastify.register(datesRoutes);
 await fastify.register(randomiserRoutes);
 await fastify.register(proxyRoutes);
 
-// Health check — useful for verifying the server is up without touching auth
+// health check, so we can confirm the server is up without touching auth
 fastify.get('/api/health', async () => ({ ok: true }));
 
 

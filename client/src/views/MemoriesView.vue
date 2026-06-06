@@ -4,6 +4,7 @@ import { useMemories }    from '../composables/useMemories.js'
 import MemoryCard         from '../components/memory/MemoryCard.vue'
 import MemorySkeleton     from '../components/memory/MemorySkeleton.vue'
 import BaseButton         from '../components/base/BaseButton.vue'
+import RandomiserNudge    from '../components/base/RandomiserNudge.vue'
 
 const { memories, loading, error, hasMore, fetchMemories, loadMore } = useMemories()
 
@@ -29,8 +30,12 @@ onMounted(fetchMemories)
 
 		<!-- Empty state -->
 		<div v-else-if="!memories.length" class="memories-page__empty">
-			<p>no memories yet — start by adding your first one</p>
+			<p>no memories yet — go make our first one together</p>
 			<RouterLink to="/memories/new" class="btn btn--primary">add memory</RouterLink>
+			<RandomiserNudge
+				class="memories-page__nudge"
+				text="don't know where to start? the randomiser can dream up our first date together"
+			/>
 		</div>
 
 		<!-- Memory grid -->
@@ -45,24 +50,57 @@ onMounted(fetchMemories)
 				<BaseButton v-else-if="hasMore" variant="secondary" @click="loadMore">
 					load more
 				</BaseButton>
-				<p v-else class="memories-page__end">that's all of them</p>
+				<p v-else class="memories-page__end">go make more memories</p>
 			</div>
+
 		</template>
+
+		<!--
+			always-present nudge toward the randomiser, pinned to the bottom of
+			the page with flex `margin-top: auto` (see
+			`.memories-page__nudge--anchored`) rather than sitting right under
+			the grid. on shorter grids it used to land mid-viewport, dead centre
+			on top of the fixed page-watermark symbol (the large ✦ sits centred
+			at `inset: 0`). anchoring it to the bottom keeps it clear of the
+			watermark on every viewport, and it reads like a calm closing note
+			instead of competing with the grid above it.
+		-->
+		<RandomiserNudge
+			v-if="memories.length"
+			class="memories-page__nudge memories-page__nudge--anchored"
+			text="need an idea for the next one?"
+		/>
 		</div><!-- /.memories-page__body -->
 	</main>
 </template>
 
 <style scoped>
 .memories-page {
-	position:  relative;
+	position:       relative;
+	/* flex column filling the viewport, so the bottom-anchored nudge below
+	   has somewhere to push to. see `.memories-page__nudge--anchored` */
+	display:        flex;
+	flex-direction: column;
+	min-height:     100dvh;
 }
 
 .memories-page__body {
-	position:  relative;
-	z-index:   1;
-	padding:   var(--space-6) var(--space-4) calc(var(--space-16) + env(safe-area-inset-bottom));
-	max-width: 1080px;
-	margin:    0 auto;
+	position:       relative;
+	z-index:        1;
+	padding:        var(--space-6) var(--space-4) calc(var(--space-16) + env(safe-area-inset-bottom));
+	max-width:      1080px;
+	margin:         0 auto;
+	width:          100%;
+	display:        flex;
+	flex-direction: column;
+	flex:           1;
+}
+
+/* pins the closing randomiser nudge to the bottom of the page, clear of the
+   centred page-watermark, on every viewport whether the grid is short or long */
+.memories-page__nudge--anchored {
+	margin-top: auto;
+	padding-top: var(--space-10);
 }
 
 @media (min-width: 768px) {
@@ -119,4 +157,8 @@ onMounted(fetchMemories)
 	color:          var(--text-muted);
 	font-family:    var(--font-body);
 }
+
+/* the empty-state nudge sits snugly beneath the "add memory" button. the
+   bottom-anchored variant gets its spacing from `.memories-page__nudge--anchored` instead */
+.memories-page__empty .memories-page__nudge { margin-top: var(--space-2); }
 </style>

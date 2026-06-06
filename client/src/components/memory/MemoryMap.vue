@@ -1,13 +1,13 @@
 <script setup>
-// MemoryMap is ALWAYS dynamically imported — never included in the initial bundle.
-// Leaflet + OSM tiles, pins from /api/memories/map.
+// MemoryMap is always dynamically imported, so it never lands in the initial bundle.
+// Leaflet + OSM tiles, with pins coming from /api/memories/map.
 import { onMounted, onUnmounted, ref } from 'vue'
 import { useRouter }                   from 'vue-router'
 import { getMapMemories }              from '../../services/memory.service.js'
 
-// Static PNG imports processed by Vite at build time — they get hashed asset URLs.
-// This is the correct Vite pattern; `new URL('leaflet/...', import.meta.url)` does
-// NOT resolve node_modules paths when the module is dynamically imported.
+// static PNG imports, processed by Vite at build time so they get hashed asset URLs.
+// this is the correct Vite pattern here, since `new URL('leaflet/...', import.meta.url)`
+// doesn't resolve node_modules paths when the module is dynamically imported.
 import markerIcon    from 'leaflet/dist/images/marker-icon.png'
 import markerIcon2x  from 'leaflet/dist/images/marker-icon-2x.png'
 import markerShadow  from 'leaflet/dist/images/marker-shadow.png'
@@ -18,12 +18,13 @@ let   map     = null
 let   L       = null
 
 onMounted(async () => {
-	// Leaflet is a large dependency — import dynamically so it never ends up
-	// in the main bundle (this component is already lazy-loaded by MapView).
+	// Leaflet is a large dependency, so we import it dynamically here, since
+	// it never needs to land in the main bundle anyway (MapView already
+	// lazy-loads this component).
 	L = (await import('leaflet')).default
 	await import('leaflet/dist/leaflet.css')
 
-	// Fix Leaflet's default icon paths — use the Vite-processed static imports above
+	// fix Leaflet's default icon paths using the Vite-processed static imports above
 	delete L.Icon.Default.prototype._getIconUrl
 	L.Icon.Default.mergeOptions({
 		iconUrl:       markerIcon,
@@ -76,7 +77,7 @@ onMounted(async () => {
 		// Fit the map to show all pins
 		if (bounds.length) map.fitBounds(bounds, { padding: [40, 40] })
 	} catch {
-		// If the memories endpoint fails, just leave the empty map — no crash
+		// if the memories endpoint fails, we just leave the map empty rather than crashing
 	}
 })
 

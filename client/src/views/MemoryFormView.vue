@@ -8,7 +8,7 @@ import BaseButton               from '../components/base/BaseButton.vue'
 
 const router = useRouter()
 
-// reactive (not ref) — no .value needed in script or template
+// reactive, not ref, so we don't need .value anywhere in script or template
 const form = reactive({
 	title:    '',
 	note:     '',
@@ -19,7 +19,7 @@ const form = reactive({
 	lng:      null,
 })
 
-// ── Unsplash image search — debounced 400ms on title change ──────────────────
+// unsplash image search, debounced 400ms on title change
 const images         = ref([])
 const searchLoading  = ref(false)
 let   debounceTimer  = null
@@ -38,8 +38,8 @@ watch(() => form.title, (title) => {
 	}, 400)
 })
 
-// ── Place search (Nominatim geocoding) ───────────────────────────────────────
-// Debounced 500ms — Nominatim ToS requires ≤1 req/s
+// place search via Nominatim geocoding
+// debounced 500ms, since Nominatim's terms of service cap us at 1 request/sec
 const geoResults      = ref([])
 const geoSearchActive = ref(false)  // true while dropdown is open
 let   geoTimer        = null
@@ -52,7 +52,7 @@ watch(() => form.location, (val) => {
 		try {
 			const data = await geocodePlace(val.trim())
 			geoResults.value = data?.results ?? []
-		} catch { /* silently skip — location is optional */ }
+		} catch { /* not a big deal, location is optional anyway */ }
 	}, 500)
 })
 
@@ -101,7 +101,8 @@ async function submit() {
 	submitError.value  = ''
 	submitLoading.value = true
 	try {
-		// Backend schema: memory_date (required), description, location_name — NOT date/note/location
+		// the backend schema wants memory_date (required), description, location_name,
+		// not date/note/location like the form fields are named
 		const payload = {
 			title:         form.title.trim(),
 			description:   form.note.trim() || undefined,
@@ -132,7 +133,7 @@ async function submit() {
 		<form class="memory-form-page__form" @submit.prevent="submit">
 			<BaseInput id="mem-title" v-model="form.title" label="title" placeholder="what do you want to remember?" />
 
-			<!-- Unsplash image picker — appears after typing 3+ chars in title -->
+			<!-- unsplash image picker, appears once you've typed 3+ chars in the title -->
 			<div v-if="images.length || searchLoading" class="mem-images">
 				<p class="mem-images__label">pick a cover photo</p>
 				<div v-if="searchLoading" class="mem-images__loading">searching…</div>
@@ -179,7 +180,7 @@ async function submit() {
 				</ul>
 			</div>
 
-			<!-- GPS fallback — still available alongside place search -->
+			<!-- GPS fallback, still available alongside the place search -->
 			<div class="mem-geo">
 				<BaseButton type="button" variant="secondary" :loading="geoLoading" @click="getLocation">
 					{{ form.lat ? 'location pinned ✦' : 'use my GPS location' }}

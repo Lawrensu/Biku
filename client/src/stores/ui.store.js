@@ -5,7 +5,7 @@ import { ref, watch } from 'vue'
 export const useUiStore = defineStore('ui', () => {
 	// Read persisted preference first; fall back to the OS colour scheme.
 	// The blocking inline script in index.html already applied this attribute
-	// before Vue mounted — this store just keeps it in sync reactively.
+	// before Vue even mounted, so this store is just here to keep things in sync reactively.
 	const systemPrefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches
 	const theme = ref(localStorage.getItem('biku-theme') || (systemPrefersDark ? 'dark' : 'light'))
 

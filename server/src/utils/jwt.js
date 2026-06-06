@@ -7,7 +7,7 @@ export const COOKIE_OPTS = {
 	httpOnly: true,
 	sameSite: 'lax',
 	path: '/',
-	// secure: true in production — omitted here so dev over HTTP works
+	// secure: true belongs in production. left off here so dev over plain HTTP still works
 	maxAge: 60 * 60 * 24 * 7, // 7 days
 };
 

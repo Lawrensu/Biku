@@ -10,7 +10,7 @@ const emit = defineEmits(['close'])
 
 function close() { emit('close') }
 
-// Close on Escape — only while the modal is open
+// close on escape, but only while the modal is actually open
 function onKeydown(e) {
 	if (e.key === 'Escape' && props.open) close()
 }

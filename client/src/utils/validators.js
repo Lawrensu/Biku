@@ -1,11 +1,11 @@
-// Biku — client-side validation rules
+// Biku client-side validation rules
 //
 // Each validator returns a function (value: string) => true | string.
 // true   = valid
 // string = error message to display
 //
 // All messages follow the brand voice: lowercase-first, warm, specific.
-// Never generic ("this field is required") — always contextual and human.
+// keep them away from generic copy like "this field is required". always be specific and human about it.
 
 
 // ── Core validators ───────────────────────────────────────────────────────────

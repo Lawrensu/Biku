@@ -17,7 +17,7 @@ const uiStore   = useUiStore()   // calling this activates the immediate theme w
 // apiFetch dispatches 'biku:unauthorized' before throwing so we can react
 // without creating a circular import (api → router → stores → api).
 // We clear the user state and redirect to /login only if the current page
-// actually requires auth — public pages (landing, login) should stay put.
+// actually requires auth. public pages like landing and login should just stay put.
 // ─────────────────────────────────────────────────────────────────────────────
 
 function handleUnauthorized() {

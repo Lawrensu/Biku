@@ -43,7 +43,7 @@ async function joinWithCode() {
 	joinError.value   = ''
 	try {
 		await couple.joinCouple(joinCode.value.trim())
-		// JWT was reissued by the server — force re-fetch to pick it up
+		// the server reissued the JWT, so force a re-fetch to pick it up
 		await auth.fetchMe(true)
 		router.push('/dashboard')
 	} catch (e) {
@@ -124,7 +124,7 @@ async function joinWithCode() {
 }
 
 .pair-page__inner {
-	position:   relative; /* above the fixed watermark */
+	position:   relative; 
 	z-index:    1;
 	width:      100%;
 	max-width:  480px;

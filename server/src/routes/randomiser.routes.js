@@ -111,11 +111,15 @@ Respond with a single JSON object only — no markdown, no explanation, no code 
 					generationConfig: {
 						temperature:     0.9,
 						maxOutputTokens: 512,
+						// turn off chain-of-thought thinking. gemini-2.5-flash enables it by
+						// default, and that prepends reasoning text before the JSON response,
+						// which breaks JSON.parse. we don't need any of that for a task this simple.
+						// this has to sit nested inside generationConfig, not as a sibling of it.
+						// sending it as a top-level field makes Gemini respond with HTTP 400
+						// ("Unknown name thinkingConfig: Cannot find field"), and that 400 was
+						// quietly tripping the seed fallback on every single request.
+						thinkingConfig: { thinkingBudget: 0 },
 					},
-					// Disable chain-of-thought thinking — gemini-2.5-flash enables it by
-					// default which prepends reasoning tokens before the JSON response,
-					// breaking JSON.parse. We don't need thinking for this simple task.
-					thinkingConfig: { thinkingBudget: 0 },
 				}),
 			},
 		);
@@ -141,7 +145,7 @@ Respond with a single JSON object only — no markdown, no explanation, no code 
 			tags:        Array.isArray(idea.tags) ? idea.tags : [],
 		};
 	} catch {
-		// Any parse or network error — caller falls back to seed table
+		// any parse or network failure lands here, and the caller just falls back to the seed table
 		return null;
 	}
 }

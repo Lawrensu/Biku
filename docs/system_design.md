@@ -279,7 +279,17 @@ Server creates couple record:
   partner_b_id = null
   invite_code  = "XK92PL"
   invite_status = "pending"
+Server also sets couple_id on User A immediately
+(see bug fix #5 — without this, User A's own
+JWT never refreshes and they'd be stuck unable
+to reach any paired route, including their own
+invite screen)
 UI shows invite code
+
+User A now has full access to the shared space
+(memories, lists, mood, dates, randomiser, settings)
+even though partner_b_id is still null — this is
+"solo setup mode", see 3.3 below for the reasoning
 
 User A shares code out of band
 (SMS, chat, etc.)
@@ -296,12 +306,17 @@ User A shares code out of band
                                             Validates invite_status = "pending"
                                             Sets partner_b_id = User B
                                             Sets invite_status = "accepted"
-                                            Sets couple_id on both user records
+                                            Sets couple_id on User B
+                                          (User A already had couple_id set
+                                          from the moment they created the
+                                          couple — see "solo setup mode" above)
                                           Redirected to /dashboard
 
-User A's next request returns
-updated user with couple_id set.
-Full access unlocked for both.
+User A's next request detects the change
+(couple now has a partner_b) and the dashboard
+swaps from solo setup mode into the full
+two-person view — partner profile, dual-line
+mood chart, shared everything.
 ```
 
 ### 3.2 Creating a Memory
@@ -329,23 +344,54 @@ User is redirected to /memories/:id
 The new memory appears as a pin on /map
 ```
 
-### 3.3 Unpaired User Preview State
+### 3.3 Solo Setup Mode (couple created, partner not joined yet)
+
+This replaces an earlier plan for a "blurred preview" state. Once the team actually
+sat with the question — "what should the creator see while they're waiting?" —
+blurred placeholder cards and a flat-line chart felt cold and unfinished, like
+being shown a locked door. The decision instead: let the creator actually use
+the space. There's a real, common reason to want this — adding memories from
+before the couple started using Biku, picking a couple name, queueing up list
+items, logging a mood, getting date ideas from the randomiser to suggest once
+the partner arrives. None of that needs a partner to exist yet, and blocking it
+would leave User A doing nothing for however long it takes User B to register.
 
 ```
-User registers, no partner yet
-Redirected to /pair — prompted to generate invite code
+User registers, creates a couple, gets an invite code
+couple_id is now set on their account — partner_b_id is still null
 
-User navigates to /dashboard:
-  Memory card slots shown as blurred placeholder cards
-  List preview shows empty state with "Pair to unlock" prompt
-  Mood chart shown as flat line with prompt overlay
-  Countdown shows "--" — no anniversary date set yet
-  Persistent banner: "Invite your partner to unlock everything"
+User navigates anywhere in the app:
+  Full access to memories, lists, mood, dates, randomiser, settings
+  (this is what the code calls "isPaired" — having a couple record,
+   which is a slightly looser definition than "has a partner")
 
-All POST and PATCH operations are blocked at the API level
-The pair middleware checks couple_id from the JWT — if null, returns 403
-Frontend state is never the authority on what is permitted
+The dashboard (and settings) additionally show a warm, persistent
+reminder card with the invite code, so the creator never loses track
+of where it went or forgets their partner hasn't joined yet:
+  "this space is ready and waiting for them.
+   share [code], and the moment they join, it's ours."
+
+The moment partner_b_id is set (partner joins):
+  The reminder card disappears
+  Partner profile, dual-line mood chart, and "our X" framing
+  reflect a genuinely shared space from then on
 ```
+
+**Why this matters for the access model:** "paired" in the codebase (`auth.isPaired`,
+the `requiresPaired` middleware) means *"has created or joined a couple record"* —
+not *"has an active partner."* That's intentional, confirmed, and now documented:
+it's what makes solo setup mode possible. A second, narrower flag — `hasPartner`
+(`!!couple.partnerBId`) — is what the UI uses to decide whether to show the
+reminder card and the two-person views. The backend access guard never needed to
+change: every route that requires a couple record (memories, lists, mood, dates,
+randomiser, settings, map) is exactly the set of things a solo creator should
+reasonably be able to set up in advance.
+
+All POST and PATCH operations are still gated at the API level — the pair
+middleware checks `couple_id` from the JWT, and frontend state is never the
+authority on what's permitted. What changed is only the *meaning* assigned to
+having a couple record: it now explicitly represents "has set up our space,"
+with partnership being a separate, additive state layered on top.
 
 ---
 
@@ -556,7 +602,7 @@ GET    /api/proxy/weather
 |`/register`|RegisterView|No|Unauthed|Redirects to /dashboard if already logged in|
 |`/login`|LoginView|No|Unauthed|Redirects to /dashboard if already logged in|
 |`/pair`|PairView|Yes|Unpaired|Invite code flow|
-|`/dashboard`|DashboardView|Yes|Any|Full or preview state depending on pair status|
+|`/dashboard`|DashboardView|Yes|Any|Full dashboard always; shows a warm "share your code" reminder on top while in solo setup mode (couple created, partner not joined yet) — see 3.3|
 |`/memories`|MemoriesView|Yes|Paired|Paginated memory journal|
 |`/memories/new`|MemoryFormView|Yes|Paired|Create memory form|
 |`/memories/:id`|MemoryDetailView|Yes|Paired|Single memory with weather|

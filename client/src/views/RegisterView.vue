@@ -13,7 +13,7 @@ const form = reactive({ displayName: '', email: '', password: '', confirmPasswor
 const generalError = ref('')
 const loading      = ref(false)
 
-// Template refs — used to trigger validation on all fields at submit time
+// template refs, used to trigger validation on all fields at submit time
 const nameRef    = ref(null)
 const emailRef   = ref(null)
 const passRef    = ref(null)

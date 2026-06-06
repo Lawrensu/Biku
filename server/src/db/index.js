@@ -3,7 +3,7 @@ import { Database } from 'bun:sqlite';
 import * as schema from './schema.js';
 
 
-// Foreign key enforcement is off by default in SQLite — every connection must opt in
+// SQLite has foreign key enforcement off by default, so every connection has to turn it on itself
 const sqlite = new Database(process.env.DATABASE_URL);
 sqlite.run('PRAGMA foreign_keys = ON');
 

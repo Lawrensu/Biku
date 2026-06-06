@@ -55,7 +55,7 @@ export async function datesRoutes(fastify) {
 	});
 
 
-	// Partial update — any member of the couple can edit any date
+	// partial update. either partner can edit any date that belongs to the couple
 	fastify.patch('/api/dates/:id', { preHandler: [requiresAuth, requiresPaired] }, async (request, reply) => {
 		const parsed = updateDateSchema.safeParse(request.body);
 		if (!parsed.success) {

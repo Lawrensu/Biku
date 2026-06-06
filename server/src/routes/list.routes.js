@@ -27,7 +27,7 @@ const reorderSchema = z.object({
 
 
 export async function listRoutes(fastify) {
-	// Get a list and all its items — auto-creates the list if it doesn't exist yet
+	// fetch a list and its items, creating the list record on first access if needed
 	fastify.get('/api/lists/:type', { preHandler: [requiresAuth, requiresPaired] }, async (request, reply) => {
 		const typeResult = listTypeSchema.safeParse(request.params.type);
 		if (!typeResult.success) {
@@ -39,7 +39,7 @@ export async function listRoutes(fastify) {
 			.where(and(eq(lists.coupleId, request.user.coupleId), eq(lists.listType, type)))
 			.get();
 
-		// First access — lazily create the list record
+		// nothing exists yet for this couple/type, so create it now
 		if (!list) {
 			const newList = {
 				id:        generateId(),
@@ -104,7 +104,7 @@ export async function listRoutes(fastify) {
 	});
 
 
-	// Update a single item — content, checked state, or sort order
+	// update a single item: its content, checked state, or sort order
 	fastify.patch('/api/lists/items/:id', { preHandler: [requiresAuth, requiresPaired] }, async (request, reply) => {
 		const parsed = updateItemSchema.safeParse(request.body);
 		if (!parsed.success) {

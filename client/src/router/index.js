@@ -4,12 +4,12 @@ import { useAuthStore } from '../stores/auth.store.js'
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Route definitions
-// All view imports are dynamic (code-split) — each view loads only when needed.
+// All view imports are dynamic (code-split), so each view only loads when it's needed.
 // meta flags:
-//   requiresAuth   — redirect to /login if not logged in
-//   requiresUnauth — redirect to /dashboard if already logged in (login/register pages)
-//   requiresPaired — redirect to /pair if logged in but not yet paired
-//   hideNav        — suppress AppNavbar (landing, auth, pair flows)
+//   requiresAuth   redirects to /login if you're not logged in
+//   requiresUnauth redirects to /dashboard if you're already logged in (login/register pages)
+//   requiresPaired redirects to /pair if you're logged in but not yet paired
+//   hideNav        hides AppNavbar (landing, auth, pair flows)
 // ─────────────────────────────────────────────────────────────────────────────
 
 const routes = [
@@ -97,7 +97,7 @@ const routes = [
 		component: () => import('../views/SettingsView.vue'),
 		meta:      { requiresAuth: true, requiresPaired: true },
 	},
-	// ── Catch-all — redirect unknown paths to landing ─────────────────────────
+	// catch-all: send unknown paths back to the landing page
 	{
 		path:      '/:pathMatch(.*)*',
 		redirect:  '/',
@@ -118,11 +118,11 @@ const router = createRouter({
 // ─────────────────────────────────────────────────────────────────────────────
 // Navigation guard
 //
-// Order of checks matters — evaluate from most-restrictive to least:
-//   1. Ensure auth state is hydrated (fetchMe is idempotent after first call)
-//   2. requiresAuth   — unauthenticated users can only see public pages
-//   3. requiresUnauth — authenticated users shouldn't see login/register again
-//   4. requiresPaired — unpaired users sent to /pair to complete setup
+// The order of these checks matters. We go from most restrictive to least:
+//   1. make sure auth state is hydrated (fetchMe is idempotent after the first call)
+//   2. requiresAuth: unauthenticated visitors can only reach public pages
+//   3. requiresUnauth: logged-in users shouldn't land back on login/register
+//   4. requiresPaired: unpaired users get sent to /pair to finish setup
 // ─────────────────────────────────────────────────────────────────────────────
 
 router.beforeEach(async (to) => {
@@ -146,13 +146,13 @@ router.beforeEach(async (to) => {
 		return { name: 'dashboard' }
 	}
 
-	// Logged in but not yet paired — send to /pair
-	// Exception: /dashboard is accessible unpaired (it shows an onboarding state)
+	// logged in but not paired yet, so send them to /pair to finish setup
+	// (the dashboard is the one exception, it works fine unpaired with an onboarding state)
 	if (to.meta.requiresPaired && loggedIn && !paired) {
 		return { name: 'pair' }
 	}
 
-	// Paired user who landed on /pair — no need to re-pair
+	// already paired, so there's no reason to land back on /pair
 	if (to.name === 'pair' && loggedIn && paired) {
 		return { name: 'dashboard' }
 	}

@@ -36,11 +36,11 @@ export const memories = sqliteTable('memories', {
 	locationName:   text('location_name'),
 	lat:            real('lat'),
 	lng:            real('lng'),
-	// Hotlinked Unsplash URL — required by Unsplash API terms
+	// hotlinked Unsplash URL, kept this way because Unsplash's API terms require it
 	imageUrl:       text('image_url'),
 	imageAuthor:    text('image_author'),
 	imageAuthorUrl: text('image_author_url'),
-	// Cached JSON string from Open-Meteo — written once on creation, never updated
+	// cached JSON string from Open-Meteo. written once on creation and never touched again
 	weatherData:    text('weather_data'),
 	createdAt:      integer('created_at').notNull(),
 });
@@ -49,7 +49,7 @@ export const memories = sqliteTable('memories', {
 export const lists = sqliteTable('lists', {
 	id:        text('id').primaryKey(),
 	coupleId:  text('couple_id').notNull().references(() => couples.id),
-	// 'bucket' | 'grocery' | 'wishlist' — one of each per couple, enforced in route handler
+	// 'bucket' | 'grocery' | 'wishlist'. each couple gets one of each, enforced in the route handler
 	listType:  text('list_type').notNull(),
 	createdAt: integer('created_at').notNull(),
 });
@@ -74,7 +74,7 @@ export const moodLogs = sqliteTable('mood_logs', {
 	// 1 (very low) to 5 (very high)
 	moodScore: integer('mood_score').notNull(),
 	note:      text('note'),
-	// YYYY-MM-DD — one entry per user per day, enforced in route handler
+	// stored as YYYY-MM-DD. one entry per user per day, enforced in the route handler
 	logDate:   text('log_date').notNull(),
 	createdAt: integer('created_at').notNull(),
 });

@@ -54,7 +54,7 @@ function onKeydown(e) {
 
 <template>
 	<li class="list-item">
-		<!-- Drag handle — visible, used by vue-draggable-plus -->
+		<!-- drag handle, visible, used by vue-draggable-plus -->
 		<span v-if="dragHandle" class="list-item__drag" title="drag to reorder">
 			<GripVertical :size="16" />
 		</span>
@@ -70,7 +70,7 @@ function onKeydown(e) {
 			<Check v-if="item.is_checked" :size="14" />
 		</button>
 
-		<!-- Content — click to edit inline -->
+		<!-- content, click to edit inline -->
 		<span
 			v-if="!editing"
 			class="list-item__content"
@@ -102,8 +102,24 @@ function onKeydown(e) {
 	gap:         var(--space-2);
 	padding:     var(--space-2) 0;
 	border-bottom: 1px solid var(--border-subtle);
+	/*
+		same "arrives, doesn't appear" entrance as `.card` (see main.css), so
+		newly-added list items ease in from below instead of snapping into
+		place. this pairs with the fix that made items show up right away on
+		add: now that they appear immediately, they should appear *gently* too.
+	*/
+	animation: list-item-enter var(--duration-tender) var(--ease-enter);
 }
 .list-item:last-child { border-bottom: none; }
+
+@keyframes list-item-enter {
+	from { opacity: 0; transform: translateY(6px); }
+	to   { opacity: 1; transform: translateY(0);   }
+}
+
+@media (prefers-reduced-motion: reduce) {
+	.list-item { animation: none; }
+}
 
 .list-item__drag {
 	color:  var(--text-muted);

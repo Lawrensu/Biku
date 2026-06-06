@@ -55,7 +55,7 @@ export async function memoryRoutes(fastify) {
 	});
 
 
-	// Create a memory — fetches and caches weather if coordinates are provided
+	// create a memory. fetches and caches the day's weather when coordinates come with it
 	fastify.post('/api/memories', { preHandler: [requiresAuth, requiresPaired] }, async (request, reply) => {
 		const parsed = createMemorySchema.safeParse(request.body);
 		if (!parsed.success) {
@@ -92,7 +92,7 @@ export async function memoryRoutes(fastify) {
 	});
 
 
-	// Lightweight list for map pins — only memories with coordinates
+	// lightweight list for map pins, only memories that actually have coordinates
 	fastify.get('/api/memories/map', { preHandler: [requiresAuth, requiresPaired] }, async (request, reply) => {
 		const rows = db
 			.select({
@@ -116,7 +116,7 @@ export async function memoryRoutes(fastify) {
 	});
 
 
-	// Single memory — :id must come after /map to avoid route conflict
+	// fetch a single memory. :id has to be registered after /map so it doesn't shadow it
 	fastify.get('/api/memories/:id', { preHandler: [requiresAuth, requiresPaired] }, async (request, reply) => {
 		const memory = db.select().from(memories).where(eq(memories.id, request.params.id)).get();
 
@@ -131,7 +131,7 @@ export async function memoryRoutes(fastify) {
 	});
 
 
-	// Partial update — only the creating couple can edit
+	// partial update, restricted to the couple that created this memory
 	fastify.patch('/api/memories/:id', { preHandler: requiresAuth }, async (request, reply) => {
 		const parsed = updateMemorySchema.safeParse(request.body);
 		if (!parsed.success) {
@@ -166,7 +166,7 @@ export async function memoryRoutes(fastify) {
 	});
 
 
-	// Delete a memory — ownership validated
+	// delete a memory, after checking the requesting couple actually owns it
 	fastify.delete('/api/memories/:id', { preHandler: requiresAuth }, async (request, reply) => {
 		const memory = db.select().from(memories).where(eq(memories.id, request.params.id)).get();
 
@@ -209,7 +209,7 @@ async function fetchWeather(lat, lng, date) {
 			weatherCode: daily.weathercode?.[0] ?? null,
 		};
 	} catch {
-		// Weather is non-critical — a fetch failure must not block memory creation
+		// weather is a nice-to-have, so a failed fetch here should never block saving the memory
 		return null;
 	}
 }

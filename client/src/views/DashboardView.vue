@@ -8,6 +8,7 @@ import { listMemories }             from '../services/memory.service.js'
 import { useCountdown }             from '../composables/useCountdown.js'
 import MemoryCard                   from '../components/memory/MemoryCard.vue'
 import MemorySkeleton               from '../components/memory/MemorySkeleton.vue'
+import PendingInviteBanner          from '../components/base/PendingInviteBanner.vue'
 
 const auth   = useAuthStore()
 const couple = useCoupleStore()
@@ -62,7 +63,7 @@ onMounted(async () => {
 	// Today's mood (first entry in the last 1 day)
 	try {
 		const data = await getMoods(1)
-		// Backend returns { logs } — same fix as MoodView
+		// the backend returns { logs }, same fix needed here as in MoodView
 		todayMood.value = (data?.logs ?? [])[0] ?? null
 	} catch { /* silently skip */ }
 })
@@ -81,13 +82,19 @@ onMounted(async () => {
 			</p>
 		</header>
 
-		<!-- Unpaired overlay -->
+		<!-- No couple yet at all (hasn't created or joined one) -->
 		<div v-if="!auth.isPaired" class="dashboard__unpaired card">
-			<p class="dashboard__unpaired-msg">invite your partner to unlock everything</p>
-			<RouterLink to="/pair" class="btn btn--primary">pair now</RouterLink>
+			<p class="dashboard__unpaired-msg">set up our space to get started</p>
+			<RouterLink to="/pair" class="btn btn--primary">get started</RouterLink>
 		</div>
 
 		<template v-else>
+			<!-- Solo setup mode: couple exists, partner hasn't joined yet -->
+			<PendingInviteBanner
+				v-if="couple.couple && !couple.hasPartner"
+				:code="couple.couple?.inviteCode"
+			/>
+
 			<!-- Today's mood widget -->
 			<section class="dashboard__section">
 				<h2 class="dashboard__section-title">today's mood</h2>
@@ -139,7 +146,7 @@ onMounted(async () => {
 					</template>
 					<div v-else class="dashboard__empty-state">
 						<p class="dashboard__empty">no memories yet</p>
-						<RouterLink to="/memories/new" class="btn btn--primary dashboard__empty-btn">add your first</RouterLink>
+						<RouterLink to="/memories/new" class="btn btn--primary dashboard__empty-btn">add our first</RouterLink>
 					</div>
 				</div>
 			</section>
@@ -149,14 +156,14 @@ onMounted(async () => {
 
 <style scoped>
 .dashboard {
-	position:   relative; /* stacking context — content above the fixed watermark */
+	position:   relative; /* stacking context, keeps content above the fixed watermark */
 	z-index:    1;
 	padding:    var(--space-6) var(--space-4) calc(var(--space-16) + env(safe-area-inset-bottom, 0px));
 	max-width:  960px;
 	margin:     0 auto;
 }
 
-/* Centre within available space — max() ensures we never overlap the sidebar */
+/* centre within the available space, max() makes sure we never overlap the sidebar */
 @media (min-width: 768px) {
 	.dashboard {
 		margin-left:  max(var(--sidebar-w), calc((100vw - 960px) / 2));

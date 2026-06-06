@@ -5,8 +5,8 @@
 // to http://localhost:3000, so no absolute URL is needed.
 //
 // On a 401 response a custom DOM event is dispatched. App.vue listens for
-// it and handles the redirect to /login — this avoids a circular import
-// between api.js → router → stores → api.js.
+// it and handles the redirect to /login, which sidesteps a circular import
+// (api.js -> router -> stores -> api.js) we'd otherwise run into.
 
 
 export async function apiFetch(path, options = {}) {
@@ -20,8 +20,18 @@ export async function apiFetch(path, options = {}) {
 	})
 
 
-	// Session expired or cookie invalid — broadcast so App.vue can react
-	if (response.status === 401) {
+	// Session expired or cookie invalid, so broadcast it and let App.vue react.
+	//
+	// login and register intentionally return 401 for bad credentials, and that's
+	// a normal "try again" moment, not a stale session. If we treated it as one,
+	// we'd (a) fire a spurious `biku:unauthorized` that wipes any cached auth state,
+	// and (b) throw away the backend's actual message ("invalid credentials") in
+	// favour of a flat "Unauthenticated" string, which is exactly the confusing
+	// copy that showed up on a failed sign-in. So those two endpoints just fall
+	// through to the normal error-parsing path below instead.
+	const isCredentialsAttempt = path === '/api/auth/login' || path === '/api/auth/register'
+
+	if (response.status === 401 && !isCredentialsAttempt) {
 		window.dispatchEvent(new CustomEvent('biku:unauthorized'))
 
 		const err       = new Error('Unauthenticated')

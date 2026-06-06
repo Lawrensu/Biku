@@ -11,8 +11,8 @@ import {
 export const useAuthStore = defineStore('auth', () => {
 	const user     = ref(null)
 	// Tracks whether we've already resolved auth state this session.
-	// The router guard calls fetchMe() on every navigation — this flag
-	// prevents redundant network requests once auth is known.
+	// The router guard calls fetchMe() on every navigation, so this flag
+	// stops it from firing the same request over and over once we already know.
 	const _fetched = ref(false)
 
 
@@ -35,7 +35,7 @@ export const useAuthStore = defineStore('auth', () => {
 			user.value = data.user
 		} catch {
 			// 401 is handled globally in apiFetch (dispatches biku:unauthorized).
-			// Any other error also means we cannot confirm auth — treat as guest.
+			// any other error means we still can't confirm auth, so just treat them as a guest
 			user.value = null
 		} finally {
 			_fetched.value = true

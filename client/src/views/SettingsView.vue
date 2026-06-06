@@ -6,6 +6,7 @@ import { useCoupleStore }          from '../stores/couple.store.js'
 import { useUiStore }              from '../stores/ui.store.js'
 import BaseInput                   from '../components/base/BaseInput.vue'
 import BaseButton                  from '../components/base/BaseButton.vue'
+import PendingInviteBanner         from '../components/base/PendingInviteBanner.vue'
 
 const router = useRouter()
 const auth   = useAuthStore()
@@ -53,9 +54,11 @@ async function logout() {
 	}
 }
 
-// Partner display
+// Partner display. While we're still in solo setup mode there's no partner
+// row to read a name from yet, so this reads as an invitation rather than a
+// blank dash
 const partnerName = computed(() =>
-	couple.partner?.displayName || couple.partner?.display_name || '—'
+	couple.partner?.displayName || couple.partner?.display_name || 'still finding their way to us'
 )
 </script>
 
@@ -66,7 +69,13 @@ const partnerName = computed(() =>
 
 		<!-- Couple settings section -->
 		<section class="settings-section card">
-			<h2 class="settings-section__title">your couple</h2>
+			<h2 class="settings-section__title">our couple</h2>
+
+			<PendingInviteBanner
+				v-if="!couple.hasPartner && couple.couple?.inviteCode"
+				compact
+				:code="couple.couple.inviteCode"
+			/>
 
 			<p class="settings-section__partner">
 				partner: <strong>{{ partnerName }}</strong>

@@ -26,8 +26,8 @@ async function reload() {
 	loading.value = true
 	try {
 		const data = await getMoods(30)
-		// Backend returns { logs } — Drizzle ORM produces camelCase field names
-		// (moodScore, logDate, userId, etc.) not snake_case.
+		// the backend returns { logs }, and Drizzle ORM gives us camelCase field
+		// names (moodScore, logDate, userId, etc.), not snake_case.
 		const all  = data?.logs ?? []
 
 		userMoods.value    = all.filter((m) => m.userId === auth.user?.id)

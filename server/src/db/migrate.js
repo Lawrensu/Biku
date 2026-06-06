@@ -6,7 +6,7 @@ import { Database } from 'bun:sqlite';
 const sqlite = new Database(process.env.DATABASE_URL ?? './biku.db');
 sqlite.run('PRAGMA foreign_keys = ON');
 
-// couples created first — users.couple_id references it
+// couples has to be created first, since users.couple_id references it
 sqlite.run(`
 	CREATE TABLE IF NOT EXISTS couples (
 		id               TEXT PRIMARY KEY,

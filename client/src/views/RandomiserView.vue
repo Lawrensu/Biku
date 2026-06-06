@@ -2,6 +2,7 @@
 import { ref, reactive } from 'vue'
 import { getIdea }       from '../services/randomiser.service.js'
 import BaseButton        from '../components/base/BaseButton.vue'
+import BaseSelect        from '../components/base/BaseSelect.vue'
 
 const filters = reactive({ budget: '', category: '', max_duration: '' })
 const idea    = ref(null)
@@ -18,7 +19,14 @@ const budgetOptions = [
 ]
 
 // Must match backend VALID_CATEGORIES enum exactly
-const categoryOptions = ['', 'outdoor', 'indoor', 'food', 'adventure', 'cosy']
+const categoryOptions = [
+	{ label: 'any',       value: ''          },
+	{ label: 'outdoor',   value: 'outdoor'   },
+	{ label: 'indoor',    value: 'indoor'    },
+	{ label: 'food',      value: 'food'      },
+	{ label: 'adventure', value: 'adventure' },
+	{ label: 'cosy',      value: 'cosy'      },
+]
 
 async function spin() {
 	loading.value  = true
@@ -41,7 +49,12 @@ async function spin() {
 			}),
 			minDelay,
 		])
-		idea.value = data?.idea ?? data
+		// the API responds with { idea, source }, and `source` ('ai' or 'seed')
+		// lives on the envelope, not the idea object itself. folding it into the
+		// stored idea keeps the template's `idea.source === 'ai'` check meaningful.
+		// before this, `data?.idea ?? data` discarded `source` entirely, so the
+		// badge always fell through to "curated" no matter what the real source was.
+		idea.value = data?.idea ? { ...data.idea, source: data.source } : data
 	} catch (e) {
 		error.value = e.message || 'could not get an idea — try again'
 	} finally {
@@ -55,24 +68,27 @@ async function spin() {
 	<main class="randomiser-page">
 		<div class="page-watermark" aria-hidden="true">∞</div>
 		<h1 class="randomiser-page__title">date night randomiser</h1>
-		<p class="randomiser-page__sub">let us plan your next adventure</p>
+		<p class="randomiser-page__sub">let us plan our next adventure</p>
 
 		<!-- Filters -->
 		<div class="randomiser-filters card">
 			<div class="randomiser-filters__row">
-				<label class="randomiser-filter__label" for="rand-budget">budget</label>
-				<select id="rand-budget" v-model="filters.budget" class="randomiser-filter__select">
-					<option v-for="o in budgetOptions" :key="o.value" :value="o.value">{{ o.label }}</option>
-				</select>
+				<BaseSelect
+					id="rand-budget"
+					v-model="filters.budget"
+					label="budget"
+					:options="budgetOptions"
+				/>
 			</div>
 			<div class="randomiser-filters__row">
-				<label class="randomiser-filter__label" for="rand-category">vibe</label>
-				<select id="rand-category" v-model="filters.category" class="randomiser-filter__select">
-					<option v-for="o in categoryOptions" :key="o" :value="o">{{ o || 'any' }}</option>
-				</select>
-
+				<BaseSelect
+					id="rand-category"
+					v-model="filters.category"
+					label="vibe"
+					:options="categoryOptions"
+				/>
 			</div>
-			<div class="randomiser-filters__row">
+			<div class="randomiser-filters__row randomiser-filters__row--input">
 				<label class="randomiser-filter__label" for="rand-duration">max hours</label>
 				<input
 					id="rand-duration"
@@ -94,7 +110,7 @@ async function spin() {
 				class="randomiser-spin__btn"
 				@click="spin"
 			>
-				{{ loading ? 'finding your date…' : 'spin ✦' }}
+				{{ loading ? 'finding our date…' : 'spin ✦' }}
 			</BaseButton>
 		</div>
 
@@ -164,9 +180,17 @@ async function spin() {
 }
 
 .randomiser-filters__row {
-	display:     flex;
-	align-items: center;
-	gap:         var(--space-4);
+	display: flex;
+}
+
+/*
+	the budget/vibe rows just host a BaseSelect (label above trigger, like BaseInput).
+	the duration row keeps the same "label above field" rhythm for visual
+	consistency across the filter card, stacked rather than side by side.
+*/
+.randomiser-filters__row--input {
+	flex-direction: column;
+	gap:            var(--space-1);
 }
 
 .randomiser-filter__label {
@@ -174,12 +198,9 @@ async function spin() {
 	font-size:   var(--text-sm);
 	font-weight: 600;
 	color:       var(--text-primary);
-	min-width:   80px;
 }
 
-.randomiser-filter__select,
 .randomiser-filter__input {
-	flex:          1;
 	height:        40px;
 	padding:       0 var(--space-3);
 	background:    var(--surface-raised);
@@ -189,8 +210,8 @@ async function spin() {
 	font-family:   var(--font-body);
 	font-size:     var(--text-sm);
 	outline:       none;
+	transition:    border-color var(--duration-fast) var(--ease-tender);
 }
-.randomiser-filter__select:focus,
 .randomiser-filter__input:focus {
 	border-color: var(--accent-warm);
 }

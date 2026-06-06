@@ -37,7 +37,7 @@ export async function moodRoutes(fastify) {
 			return reply.code(400).send({ error: 'invalid query', code: 'VALIDATION_ERROR' });
 		}
 
-		// Calculate the cutoff date string — SQLite date comparison works on YYYY-MM-DD strings
+		// build the cutoff as a YYYY-MM-DD string, since that's the format SQLite compares correctly
 		const cutoff = new Date();
 		cutoff.setDate(cutoff.getDate() - parsed.data.days);
 		const cutoffDate = cutoff.toISOString().slice(0, 10);
@@ -55,7 +55,7 @@ export async function moodRoutes(fastify) {
 	});
 
 
-	// Log today's mood — one entry per user per day enforced here
+	// log today's mood. one entry per user per day, enforced right here
 	fastify.post('/api/moods', { preHandler: [requiresAuth, requiresPaired] }, async (request, reply) => {
 		const parsed = createMoodSchema.safeParse(request.body);
 		if (!parsed.success) {
@@ -92,7 +92,7 @@ export async function moodRoutes(fastify) {
 	});
 
 
-	// Edit a mood log — only today's entry can be updated
+	// edit a mood log. only today's entry is allowed to be updated
 	fastify.patch('/api/moods/:id', { preHandler: [requiresAuth, requiresPaired] }, async (request, reply) => {
 		const parsed = updateMoodSchema.safeParse(request.body);
 		if (!parsed.success) {
@@ -110,7 +110,7 @@ export async function moodRoutes(fastify) {
 		if (log.userId !== request.user.id) {
 			return reply.code(403).send({ error: 'forbidden', code: 'FORBIDDEN' });
 		}
-		// Past entries are immutable — prevents retroactive mood manipulation
+		// past entries stay locked, so nobody can rewrite how they felt after the fact
 		if (log.logDate !== today()) {
 			return reply.code(403).send({ error: 'only today\'s entry can be edited', code: 'PAST_ENTRY' });
 		}

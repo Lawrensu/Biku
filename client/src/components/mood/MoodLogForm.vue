@@ -10,7 +10,7 @@ const props = defineProps({
 
 const emit = defineEmits(['logged'])
 
-// Pre-fill if editing — backend returns camelCase (moodScore) from Drizzle ORM
+// pre-fill when editing. the backend returns camelCase (moodScore) from Drizzle ORM
 const score    = ref(props.existingEntry?.moodScore ?? props.existingEntry?.mood_score ?? null)
 const note     = ref(props.existingEntry?.note ?? '')
 const loading  = ref(false)
@@ -33,7 +33,7 @@ async function submit() {
 		}
 		emit('logged', { score: score.value, note: note.value })
 	} catch (e) {
-		// 409 means already logged today — switch to edit mode gracefully
+		// 409 means we already logged today, so just switch to edit mode gracefully
 		if (e.status === 409) {
 			editMode.value = true
 			error.value    = 'you already logged today — editing your entry'

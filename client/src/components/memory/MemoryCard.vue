@@ -8,7 +8,7 @@ const props = defineProps({
 
 const router = useRouter()
 
-// Format stored date string — Drizzle returns memoryDate (camelCase)
+// format the stored date string. Drizzle returns memoryDate (camelCase)
 const formattedDate = computed(() => {
 	const d = props.memory.memoryDate || props.memory.date
 	if (!d) return ''

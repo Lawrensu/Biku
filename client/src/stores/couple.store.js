@@ -1,5 +1,5 @@
 import { defineStore } from 'pinia'
-import { ref } from 'vue'
+import { ref, computed } from 'vue'
 import {
 	fetchCouple  as apiFetchCouple,
 	createCouple as apiCreateCouple,
@@ -11,6 +11,11 @@ import {
 export const useCoupleStore = defineStore('couple', () => {
 	const couple  = ref(null)
 	const partner = ref(null)
+
+	// true once someone has actually joined with the invite code. having a
+	// couple record (auth.isPaired) just means "we've set our space up" —
+	// this is the narrower flag for "we're both here now"
+	const hasPartner = computed(() => !!couple.value?.partnerBId)
 
 
 	async function fetchCouple() {
@@ -56,6 +61,7 @@ export const useCoupleStore = defineStore('couple', () => {
 	return {
 		couple,
 		partner,
+		hasPartner,
 		fetchCouple,
 		createCouple,
 		joinCouple,

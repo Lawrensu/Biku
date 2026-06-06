@@ -29,7 +29,16 @@ async function addNewItem() {
 	addLoading.value = true
 	try {
 		const data = await addItem(activeTab.value, newItem.value.trim())
-		lists.value[activeTab.value].push(data?.item ?? data)
+		// replace the array instead of `.push`-ing in place. ListContainer keeps
+		// its own `localItems` copy for drag-and-drop, synced via a *shallow*
+		// watcher on the `items` prop. a shallow watcher only fires when the
+		// prop reference changes, not when its contents mutate, so `.push`
+		// mutating the same array in place meant the new item never reached
+		// `localItems` until switching tabs forced a reference change (a
+		// different list's array, then back). spreading into a new array gives
+		// the watcher a genuinely new reference, so the item shows up on the
+		// active tab right away and we don't need to switch tabs to see it.
+		lists.value[activeTab.value] = [...lists.value[activeTab.value], data?.item ?? data]
 		newItem.value = ''
 	} catch { /* silently skip */ } finally {
 		addLoading.value = false

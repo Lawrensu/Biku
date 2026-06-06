@@ -32,7 +32,7 @@ const joinSchema = z.object({
 
 
 export async function coupleRoutes(fastify) {
-	// Create a new couple — user must be unpaired
+	// create a new couple (the user must not already be paired)
 	fastify.post('/api/couples', { preHandler: requiresAuth }, async (request, reply) => {
 		const user = db.select().from(users).where(eq(users.id, request.user.id)).get();
 
@@ -40,7 +40,7 @@ export async function coupleRoutes(fastify) {
 			return reply.code(409).send({ error: 'already paired', code: 'ALREADY_PAIRED' });
 		}
 
-		// Ensure invite codes are unique — retry on collision (extremely rare)
+		// keep generating until we get a code that isn't already taken (collisions should be very rare)
 		let inviteCode;
 		let attempts = 0;
 		do {
@@ -63,8 +63,8 @@ export async function coupleRoutes(fastify) {
 
 		db.insert(couples).values(couple).run();
 
-		// Link the couple back to the creator — without this the creator's coupleId
-		// stays null and /api/auth/me never triggers a JWT reissue
+		// link the couple back to the creator. skip this and the creator's coupleId
+		// stays null, so /api/auth/me never has a reason to reissue the JWT
 		db.update(users).set({ coupleId: couple.id }).where(eq(users.id, user.id)).run();
 
 		// Reissue JWT immediately so the creator can access paired routes without
@@ -77,7 +77,7 @@ export async function coupleRoutes(fastify) {
 	});
 
 
-	// Join an existing couple using an invite code — user must be unpaired
+	// join an existing couple via an invite code (the user must not already be paired)
 	fastify.post('/api/couples/join', { preHandler: requiresAuth }, async (request, reply) => {
 		const parsed = joinSchema.safeParse(request.body);
 		if (!parsed.success) {
@@ -113,8 +113,8 @@ export async function coupleRoutes(fastify) {
 		db.update(users).set({ coupleId: couple.id }).where(eq(users.id, couple.partnerAId)).run();
 		db.update(users).set({ coupleId: couple.id }).where(eq(users.id, user.id)).run();
 
-		// Reissue JWT for the joining user with coupleId now set —
-		// without this the requiresPaired middleware would still see coupleId: null
+		// reissue the JWT for the joining user now that coupleId is set,
+		// otherwise requiresPaired would keep seeing coupleId: null on this request
 		const freshUser = db.select().from(users).where(eq(users.id, user.id)).get();
 		const token = await issueToken(freshUser);
 		reply.setCookie('token', token, COOKIE_OPTS);

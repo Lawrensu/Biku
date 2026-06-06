@@ -73,10 +73,15 @@ The dev default (`biku-dev-secret-change-in-production`) is fine for local devel
 
 ```bash
 bun run migrate   # creates all tables in biku.db
-bun run seed      # populates date_ideas with 28 starter ideas
+bun run seed      # populates date_ideas, plus an optional showcase couple (see below)
 ```
 
 Both scripts are idempotent — safe to run more than once.
+
+`bun run seed` does two independent things, each with its own "already done" check:
+
+1. **`date_ideas`** — always runs on a fresh database, inserting the 28 starter ideas the randomiser falls back to when Gemini is unavailable.
+2. **Showcase couple (Law + Ariana)** — a demo dataset for presenting the app, built on top of an existing account with the email `lawrensuleo@gmail.com`. It looks that account up, creates a second account for "Ariana" (`Ariana7@gmail.com` / `DPRGrande7#`), pairs her onto the existing couple, and seeds a few months of memories, important dates, list items, and ~20 days of mood logs for both partners — enough to show off the mood chart, map, lists, and dashboard with real-looking content. If no account with that email exists yet (e.g. on a fresh clone), this section just logs a message and skips — it won't fail the rest of the seed run.
 
 ### 2d. Start the backend
 
@@ -131,7 +136,7 @@ Then open http://localhost:5173 in the browser.
 |---|---|---|
 | `bun run dev` | `server/` | Start backend with file watching |
 | `bun run migrate` | `server/` | Create or re-create all DB tables |
-| `bun run seed` | `server/` | Seed `date_ideas` (skips if already seeded) |
+| `bun run seed` | `server/` | Seed `date_ideas`, plus the Law + Ariana showcase couple (each part skips if already seeded) |
 | `npm run dev` | `client/` | Start Vite dev server |
 | `npm run build` | `client/` | Production build to `client/dist/` |
 
@@ -140,7 +145,7 @@ Then open http://localhost:5173 in the browser.
 ## 6. Architecture notes
 
 - **Auth:** JWT stored in `httpOnly` cookie — no token management needed on the frontend
-- **Couple state:** users start unpaired; full app access unlocks after both partners join via invite code
+- **Couple state:** a new user creates or joins a couple via invite code, which immediately opens up the whole shared space (memories, lists, mood, dates, randomiser, settings). this is "solo setup mode": it lets the first partner get everything ready while waiting for the second to join. a warm reminder card keeps the invite code visible until a partner actually joins; once they do, the dashboard switches into the full two-person view (partner profile, dual-line mood chart, "our" framing throughout). see `docs/system_design.md` section 3.3 for the full reasoning.
 - **Weather:** fetched from Open-Meteo (no key needed) and cached permanently on the memory record
 - **Randomiser:** calls Gemini 2.5 Flash to generate a date idea; falls back to the 28 seeded ideas if the API is unavailable
 - **Map:** Leaflet + OpenStreetMap tiles, no key required
