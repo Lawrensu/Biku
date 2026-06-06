@@ -181,14 +181,17 @@ export async function listRoutes(fastify) {
 			return reply.code(400).send({ error: 'one or more item IDs are invalid', code: 'INVALID_IDS' });
 		}
 
-		// Write each sort_order in a single transaction
-		const setOrder = db.transaction(() => {
+		// db.transaction runs the callback immediately and hands back whatever it returns,
+		// unlike bun:sqlite's raw Database.transaction which hands back a function you call later.
+		// Treating it as the latter (assigning the result to setOrder and then calling setOrder())
+		// meant we were calling undefined() once the writes had already happened, which is what
+		// blew up with a 500 on every reorder attempt.
+		db.transaction(() => {
 			parsed.data.ordered_ids.forEach((id, index) => {
 				db.update(listItems).set({ sortOrder: index }).where(eq(listItems.id, id)).run();
 			});
 		});
 
-		setOrder();
 		return reply.code(204).send();
 	});
 }
