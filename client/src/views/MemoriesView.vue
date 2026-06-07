@@ -108,6 +108,8 @@ onMounted(fetchMemories)
 		margin-left:  max(var(--sidebar-w), calc((100vw - 1080px) / 2));
 		margin-right: auto;
 		padding-top:  var(--space-8);
+		/* without this, width:100% + margin-left overflows the right edge on narrow tablets */
+		max-width:    min(1080px, calc(100vw - var(--sidebar-w)));
 	}
 }
 
