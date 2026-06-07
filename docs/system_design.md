@@ -560,8 +560,11 @@ DELETE /api/dates/:id
 ```
 GET    /api/date-ideas
        Query:    ?budget=1&category=outdoor&max_duration=120
-       Calls Gemini 2.0 Flash to generate a date idea matching the filters.
+       Calls Gemini 2.5 Flash to generate a date idea matching the filters.
        Falls back to the seeded date_ideas table if AI is unavailable.
+       The seed fallback uses progressive filter relaxation so users always
+       get a result: tries all three filters first, then drops max_duration,
+       then drops category, then returns any idea from the full table.
        Response includes a "source" field: "ai" | "seed"
        Guard:    requiresAuth, requiresPaired
        Response: { idea, source }

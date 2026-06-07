@@ -630,6 +630,14 @@ This pattern evolved past a simple fixed-margin offset (an earlier draft of this
 
 Why `max()` instead of a flat margin: at narrow tablet/laptop widths the sidebar width dominates (content sits flush against it), but on a wide monitor the `calc()` term takes over and the content block centres itself in the open space instead of hugging the sidebar with a huge gap on the right. One declaration handles both cases — no separate "centred" breakpoint needed. Each view substitutes its own content `max-width` (960px for the dashboard, 700px for settings, etc.) into the `calc()`.
 
+**Tablet overflow fix (important):** every view's page body also has `width: 100%` in its base rule, which evaluates to the full viewport width. At exactly 768px (iPad Mini), `width: 100%` = 768px, and adding `margin-left: 64px` makes the total box 832px — overflowing the right edge by the full sidebar width. To prevent this, each view's tablet media query also sets:
+
+```css
+max-width: min(960px, calc(100vw - var(--sidebar-w)));
+```
+
+The `min()` caps content width to the space genuinely available after the sidebar at narrow viewports, while the original `max-width` takes over on wider screens where the overflow never occurs. Both properties always live together in the same `@media (min-width: 768px)` block — if you add a new view, include both.
+
 Mobile bottom nav is handled by adding bottom padding: `padding-bottom: calc(var(--space-16) + env(safe-area-inset-bottom))`.
 
 ### 14.4 Heavy dependencies — always lazy
