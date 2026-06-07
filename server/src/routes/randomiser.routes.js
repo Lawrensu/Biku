@@ -44,18 +44,38 @@ export async function randomiserRoutes(fastify) {
 }
 
 
-// Build filter conditions and pick one random idea from the seed table
+// Build filter conditions and pick one random idea from the seed table.
+// The seed table only has 28 ideas, so strict filter combos can easily yield
+// zero matches (e.g. splurge + indoor + 120 min). Rather than dead-ending
+// the user with a 404, we try progressively looser queries until we find
+// something — dropping max_duration first, then category, then falling back
+// to any idea that fits the budget, then any idea at all. The user always
+// gets a result; they just might get something slightly outside their filters
+// when the AI quota is exhausted and the seed table is sparse.
 function querySeeded(filters) {
 	const { budget, category, max_duration } = filters;
 
-	const conditions = [];
-	if (budget !== undefined)       conditions.push(eq(dateIdeas.budgetLevel, budget));
-	if (category !== undefined)     conditions.push(eq(dateIdeas.category, category));
-	if (max_duration !== undefined) conditions.push(lte(dateIdeas.minDuration, max_duration));
+	function query(budgetVal, categoryVal, durationVal) {
+		const conditions = [];
+		if (budgetVal !== undefined)   conditions.push(eq(dateIdeas.budgetLevel, budgetVal));
+		if (categoryVal !== undefined) conditions.push(eq(dateIdeas.category, categoryVal));
+		if (durationVal !== undefined) conditions.push(lte(dateIdeas.minDuration, durationVal));
+		return conditions.length > 0
+			? db.select().from(dateIdeas).where(and(...conditions)).all()
+			: db.select().from(dateIdeas).all();
+	}
 
-	const pool = conditions.length > 0
-		? db.select().from(dateIdeas).where(and(...conditions)).all()
-		: db.select().from(dateIdeas).all();
+	// Step 1: all three filters — exact match
+	let pool = query(budget, category, max_duration);
+
+	// Step 2: relax max_duration (budget + category still apply)
+	if (pool.length === 0) pool = query(budget, category, undefined);
+
+	// Step 3: relax category too (budget only)
+	if (pool.length === 0) pool = query(budget, undefined, undefined);
+
+	// Step 4: anything goes — the seed table always has rows
+	if (pool.length === 0) pool = query(undefined, undefined, undefined);
 
 	if (pool.length === 0) return null;
 
